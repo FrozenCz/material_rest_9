@@ -10,25 +10,29 @@ import { GetCategoriesFilterDto } from './dto/get-categories-filter.dto';
 import { Category } from './models/category.entity';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategorySettingsDto } from './dto/update-category-settings.dto';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CategorySettingsEnum } from './utils/categorySettings.enum';
 import { CategorySettings } from './models/categorySettings.entity';
 import { AssetsService } from '../assets/assets.service';
 import { SubscribeMessageEnum, WsGateway } from '../ws.gateway';
 import { User } from '../users/models/user.entity';
-import { Repository, TreeRepository } from 'typeorm';
+import { EntityManager, Repository, TreeRepository } from 'typeorm';
 
 @Injectable()
 export class CategoriesService {
+  private categoriesRepository: TreeRepository<Category>;
+
   constructor(
-    @InjectRepository(Category)
-    private categoriesRepository: TreeRepository<Category>,
+    @InjectEntityManager()
+    private manager: EntityManager,
     @InjectRepository(CategorySettings)
     private categorySettingsRepository: Repository<CategorySettings>,
     @Inject(forwardRef(() => AssetsService))
     private assetsService: AssetsService,
     private wsGateway: WsGateway,
-  ) {}
+  ) {
+    this.categoriesRepository = this.manager.getTreeRepository(Category);
+  }
 
   async getCategoryById(id: number): Promise<Category> {
     const found = await this.categoriesRepository.findOne({ where: { id } });

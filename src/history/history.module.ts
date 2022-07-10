@@ -3,15 +3,15 @@ import {HistoryService} from './history.service';
 import {HistoryController} from './history.controller';
 import {PassportModule} from '@nestjs/passport';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {HistoryRepository} from './repostitories/history.repository';
+import { History } from "./history.entity";
 
 @Module({
-    imports: [
-        PassportModule.register({defaultStrategy: 'jwt'}),
-        TypeOrmModule.forFeature([HistoryRepository]),
-    ],
-    controllers: [HistoryController],
-    providers: [HistoryService],
-    exports: [HistoryService]
+  imports: [
+    PassportModule.register({ defaultStrategy: 'jwt' }),
+    TypeOrmModule.forFeature([History]),
+  ],
+  controllers: [HistoryController],
+  providers: [HistoryService],
+  exports: [HistoryService],
 })
 export class HistoryModule {}
