@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  postgres:
+    container_name: evNest_9
+    image: postgres:alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=material_nest
+    volumes:
+      - ./db-init/init-schema.sh:/docker-entrypoint-initdb.d/init-schema.sh
+      - ./db-init/db.sql:/docker-entrypoint-initdb.d/db.sql
+      - postgres:/data/postgres
+    ports:
+      - 5432:5434
+    #command: --init-file /data/application/db.sql
+    networks:
+      - dockerNet
+
+  pgadmin:
+    container_name: pgadmin_container_material_9
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - ./db-init/servers.json:/pgadmin4/servers.json
+      - ./db-init/pgpass:/pgpass
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - dockerNet
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  dev:
+    container_name: bpknop_api_dev_9
+    image: bpknop-api-dev:0.2.4
+    build:
+      context: .
+      target: development
+      dockerfile: ./Dockerfile
+    command: npm run start:debug
+    ports:
+      - 3000:3000
+      - 9229:9229
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - postgres
+      - pgadmin
+    restart: unless-stopped
+    networks:
+      - dockerNet
+
+  prod:
+    container_name: bpknop_api_prod
+    image: bpknop_api_prod:0.2.4
+    build:
+      context: .
+      target: production
+      dockerfile: ./Dockerfile
+    command: npm run start:prod
+    ports:
+      - 3000:3000
+      - 9229:9229
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - postgres
+    links:
+      - postgres:postgres
+    restart: unless-stopped
+
+
+networks:
+  dockerNet:
+    driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
+  materialDevel:
+
+
+

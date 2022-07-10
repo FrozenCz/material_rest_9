@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Material",
+      "Group": "Servers",
+      "Host": "evNest_9",
+      "Port": 5432,
+      "PasswordDB": "postgres",
+      "MaintenanceDB": "postgres",
+      "Username": "postgres",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}
