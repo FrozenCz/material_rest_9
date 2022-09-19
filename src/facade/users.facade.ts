@@ -11,6 +11,7 @@ import { SetUserRightsDto } from 'src/users/dto/set-user-rights.dto';
 import { CreateRightsDto } from 'src/users/dto/create-rights.dto';
 import { AssetsService } from 'src/assets/assets.service';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
+import { UserDtoOut } from '../users/dto/user.dto';
 
 @Injectable()
 export class UsersFacade {
@@ -42,12 +43,40 @@ export class UsersFacade {
     return this.usersService.createUser(createUserDto, user);
   }
 
-  getUsers(getUsersFilterDto: GetUsersFilterDto): Promise<User[]> {
-    return this.usersService.getUsers(getUsersFilterDto);
+  async getUsers(
+    getUsersFilterDto: GetUsersFilterDto,
+    user: User,
+  ): Promise<UserDtoOut[]> {
+    let reachableUsers: Map<number, User> = new Map<number, User>();
+    if (user) {
+      reachableUsers = await this.getReachableUsersMap(user);
+    }
+    return this.usersService.getUsers(getUsersFilterDto).then((users) => {
+      return users.map((u) => {
+        return {
+          id: u.id,
+          username: u.username,
+          name: u.name,
+          surname: u.surname,
+          reachable: !!reachableUsers.get(u.id),
+          unit_id: u.unit.id,
+        };
+      });
+    });
   }
 
   getReachableUsers(user: User): Promise<User[]> {
     return this.usersService.getReachableUsers(user);
+  }
+
+  getReachableUsersMap(user: User): Promise<Map<number, User>> {
+    return this.getReachableUsers(user).then((users) => {
+      const userMap: Map<number, User> = new Map<number, User>();
+      for (const user of users) {
+        userMap.set(user.id, user);
+      }
+      return userMap;
+    });
   }
 
   getUserById(id: number): Promise<User> {

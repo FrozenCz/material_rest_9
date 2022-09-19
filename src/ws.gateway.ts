@@ -1,50 +1,62 @@
 import {
-    SubscribeMessage,
-    WebSocketGateway,
-    WebSocketServer,
-    WsResponse,
-} from '@nestjs/websockets';
-import {BehaviorSubject, Observable} from 'rxjs';
-import {Server} from 'ws';
-import {map} from 'rxjs/operators';
-import {Assets} from './assets/models/assets.entity';
-import {Logger} from '@nestjs/common';
+  OnGatewayConnection, OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer
+} from "@nestjs/websockets";
+import { BehaviorSubject } from 'rxjs';
+import { Server, Socket } from 'socket.io';
+import { Assets } from './assets/models/assets.entity';
+import { Logger } from "@nestjs/common";
+
 
 export enum ChangeType {
-    create,
-    update,
-    delete
+  create,
+  update,
+  delete,
 }
 
 export interface AssetsChangeType {
-    assets: Assets;
-    changeType: ChangeType
+  assets: Assets;
+  changeType: ChangeType;
 }
+
 export enum SubscribeMessageEnum {
-    assetsUpdate = 'assetsUpdate',
-    categoryUpdate = 'categoryUpdate',
-    categoryDelete = 'categoryDelete',
-    usersUpdate = 'usersUpdate',
-    usersDelete = 'usersDelete'
+  assetsUpdate = 'assetsUpdate',
+  categoryUpdate = 'categoryUpdate',
+  categoryDelete = 'categoryDelete',
+  usersUpdate = 'usersUpdate',
+  usersDelete = 'usersDelete',
 }
 
 export interface WsChange {
-    type: SubscribeMessageEnum;
-    changes: any;
+  type: SubscribeMessageEnum;
+  changes: any;
 }
 
+@WebSocketGateway({ cors: true })
+export class WsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  logger: Logger = new Logger('Gateway');
 
-@WebSocketGateway()
-export class WsGateway {
-    wsChanges$: BehaviorSubject<WsChange> = new BehaviorSubject<WsChange>(undefined);
+  @WebSocketServer()
+  server: Server;
 
-    @WebSocketServer()
-    server: Server;
+  wsChanges$: BehaviorSubject<WsChange> = new BehaviorSubject<WsChange>(
+    undefined,
+  );
 
-    @SubscribeMessage('ws')
-    onChange(client: any, data: any): Observable<WsResponse<WsChange>> {
-        Logger.debug('ano')
-        return this.wsChanges$.pipe(map(wsChange => ({event: 'ws', data: wsChange})));
-    }
+  afterInit(server: any): any {
+    this.wsChanges$.subscribe((wsChange) => {
+      this.server?.emit('changes', { data: wsChange });
+    });
+  }
+
+  handleConnection(client: Socket, ...args: any[]): any {
+    this.logger.log('client connected: ' + client.id);
+  }
+
+  handleDisconnect(client: Socket): any {
+    this.logger.log('client disconnected: ' + client.id);
+  }
 }
-

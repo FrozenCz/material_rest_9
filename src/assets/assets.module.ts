@@ -1,6 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { AssetsService } from './assets.service';
-import { AssetsController } from './assets.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
 import { CategoriesModule } from '../categories/categories.module';
@@ -23,7 +22,7 @@ import { AssetNote } from "./models/assetNote.entity";
     HistoryModule,
     WsModule,
   ],
-  controllers: [AssetsController],
+  controllers: [],
   providers: [AssetsService],
   exports: [AssetsService],
 })

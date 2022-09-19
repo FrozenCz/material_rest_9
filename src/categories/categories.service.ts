@@ -196,7 +196,7 @@ export class CategoriesService {
     const categories = await this.getDescendantsById(idCategory);
 
     return !assetsList
-      .map((asset) => asset.category.id)
+      .map((asset) => asset.category_id)
       .some((assetCategoryId) =>
         categories.map((category) => category.id).includes(assetCategoryId),
       );

@@ -67,12 +67,8 @@ export class AssetsService {
       }
     }
 
-    nAsset.user = user;
-    nAsset.category = category;
-
+    nAsset.category = Promise.resolve(category);
     await nAsset.save();
-    delete nAsset.user.rights;
-    delete nAsset.user.username;
 
     if (nAsset) {
       this.historyService
@@ -132,11 +128,9 @@ export class AssetsService {
   ): Promise<Assets> {
     const asset = await this.getAsset(assetId);
     const changedFrom = { ...asset };
+    const unitId = (await asset.user).unit.id;
 
-    const inTree = await this.unitsService.isManagerInTree(
-      asset.user?.unit?.id,
-      user,
-    );
+    const inTree = await this.unitsService.isManagerInTree(unitId, user);
 
     if (!inTree) {
       throw new UnauthorizedException('You are not able to do this operation');
@@ -204,14 +198,15 @@ export class AssetsService {
     user: User,
     managerForTransaction?: EntityManager,
   ): Promise<Assets> {
-    const toUser: User = await this.usersService.getReachableUser(userId, user);
+    const toUser: Promise<User> = this.usersService.getReachableUser(
+      userId,
+      user,
+    );
     const asset: Assets = await this.assetsRepository.findOneOrFail({
       where: { id: assetId },
     });
-    const isInTree = await this.unitsService.isManagerInTree(
-      asset.user.unit.id,
-      user,
-    );
+    const unitId = (await asset.user).unit.id;
+    const isInTree = await this.unitsService.isManagerInTree(unitId, user);
     const updatedFrom = { ...asset };
 
     if (!isInTree) {
@@ -321,11 +316,13 @@ export class AssetsService {
 
     if (
       !assets.length ||
-      assets.some(
-        (asset) =>
+      assets.some(async (asset) => {
+        const unitId = (await asset.user).unit.id;
+        return (
           asset.state === AssetState.removed ||
-          !this.unitsService.isManagerInTree(asset.user?.unit?.id, user),
-      )
+          !(await this.unitsService.isManagerInTree(unitId, user))
+        );
+      })
     ) {
       throw new BadRequestException('Bad assets');
     }

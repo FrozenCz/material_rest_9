@@ -20,8 +20,17 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { jwtModuleOptions } from 'src/config/jwt.config';
 import { AuthController } from './auth/auth.controller';
+import { AssetsController } from './assets/assets.controller';
+import { AssetsFacade } from './facade/assets.facade';
 
-const controllers = [UsersController, RightsController, AuthController];
+const controllers = [
+  UsersController,
+  RightsController,
+  AuthController,
+  AssetsController,
+];
+
+const facades = [UsersFacade, AssetsFacade];
 
 @Module({
   imports: [
@@ -57,6 +66,6 @@ const controllers = [UsersController, RightsController, AuthController];
     WsModule,
   ],
   controllers: [...controllers],
-  providers: [AppService, Api, UsersFacade],
+  providers: [AppService, Api, ...facades],
 })
 export class AppModule {}

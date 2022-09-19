@@ -11,7 +11,6 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AssetsService } from './assets.service';
 import { CreateAssetsDto } from './dto/create-assets.dto';
 import { GetUser } from '../users/utils/get-user.decorator';
 import { User } from '../users/models/user.entity';
@@ -24,10 +23,12 @@ import { ChangeUserBulkDto } from './dto/change-user-bulk.dto';
 import { ChangeAssetInformationBulkDto } from './dto/change-asset-information-bulk.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { CreateAssetNoteDto } from './dto/create-asset-note.dto';
+import { AssetsModelDto } from './dto/out/assetModel.dto';
+import { Api } from '../api';
 
 @Controller('assets')
 export class AssetsController {
-  constructor(private assetsService: AssetsService) {}
+  constructor(private api: Api) {}
 
   @Post()
   @UseGuards(AuthGuard(), RightsGuard)
@@ -36,7 +37,7 @@ export class AssetsController {
     @Body(ValidationPipe) createAssetsDto: CreateAssetsDto,
     @GetUser() user: User,
   ): Promise<any> {
-    return this.assetsService.createAssets(createAssetsDto, user);
+    return this.api.createAssets(createAssetsDto, user);
   }
 
   @Post(':id/note')
@@ -46,7 +47,7 @@ export class AssetsController {
     @Body(ValidationPipe) createAssetNoteDto: CreateAssetNoteDto,
     @GetUser() user: User,
   ): Promise<any> {
-    return this.assetsService.addNote({ ...createAssetNoteDto, assetId }, user);
+    return this.api.addNote({ ...createAssetNoteDto, assetId }, user);
   }
 
   @Patch(':id/changeUser')
@@ -57,7 +58,7 @@ export class AssetsController {
     @Param('id', ParseIntPipe) assetId: number,
     @GetUser() user: User,
   ): Promise<Assets> {
-    return this.assetsService.changeUser(assetId, userId, user);
+    return this.api.changeUser(assetId, userId, user);
   }
 
   @Patch(':id/information')
@@ -68,16 +69,12 @@ export class AssetsController {
     @Param('id', ParseIntPipe) assetId: number,
     @GetUser() user: User,
   ): Promise<Assets> {
-    return this.assetsService.changeAssetInformation(
-      updateAssetsDto,
-      assetId,
-      user,
-    );
+    return this.api.changeAssetInformation(updateAssetsDto, assetId, user);
   }
 
   @Get()
-  getAssetsList(): Promise<Assets[]> {
-    return this.assetsService.getAssetsList();
+  getAssetsList(): Promise<AssetsModelDto[]> {
+    return this.api.getAssetsList();
   }
 
   @Patch('/changeAssetUserBulk')
@@ -87,7 +84,7 @@ export class AssetsController {
     @Body(ValidationPipe) changeUserBulkDto: ChangeUserBulkDto[],
     @GetUser() user: User,
   ): Promise<Assets[]> {
-    return this.assetsService.changeUserBulk(changeUserBulkDto, user);
+    return this.api.changeUserBulk(changeUserBulkDto, user);
   }
 
   @Patch('/changeAssetInformationBulk')
@@ -98,7 +95,7 @@ export class AssetsController {
     changeAssetInformationBulkDto: ChangeAssetInformationBulkDto[],
     @GetUser() user: User,
   ): Promise<Assets[]> {
-    return this.assetsService.changeAssetInformationBulk(
+    return this.api.changeAssetInformationBulk(
       changeAssetInformationBulkDto,
       user,
     );
@@ -111,6 +108,6 @@ export class AssetsController {
     @Body(ValidationPipe) removeAssetsDto: RemoveAssetsDto,
     @GetUser() user: User,
   ): Promise<any> {
-    return this.assetsService.removeAssets(removeAssetsDto, user);
+    return this.api.removeAssets(removeAssetsDto, user);
   }
 }

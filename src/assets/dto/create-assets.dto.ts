@@ -1,19 +1,26 @@
-import { IsDate, IsDecimal, IsInt, IsNumber, IsOptional, IsString, MaxLength, Min } from "class-validator";
-import { Transform } from "class-transformer";
-
+import {
+  IsDate,
+  IsDecimal,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+} from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateAssetsDto {
-
-  @Transform(value => Number(value.value))
+  @Transform((value) => Number(value.value))
   @IsInt()
   categoryId: number;
 
-  @Transform(value => Number(value.value))
+  @Transform((value) => Number(value.value))
   @Min(1)
   @IsInt()
   quantity: number;
 
-  @Transform(value => Number(value.value))
+  @Transform((value) => Number(value.value))
   @IsInt()
   userId: number;
 
@@ -43,7 +50,7 @@ export class CreateAssetsDto {
   identificationNumber: string;
 
   @IsOptional()
-  @Transform(value => new Date(value.value))
+  @Transform((value) => new Date(value.value))
   @IsDate()
   inquiryDate: Date;
 
@@ -68,9 +75,7 @@ export class CreateAssetsDto {
   note: string;
 
   @IsOptional()
-  @Transform(value => Number(value.value))
+  @Transform((value) => Number(value.value))
   @IsNumber()
   inquiryPrice: number;
-
-
 }

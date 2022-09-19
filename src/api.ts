@@ -11,20 +11,31 @@ import { CreateRightsDto } from 'src/users/dto/create-rights.dto';
 import { AuthCredentialsDto } from './auth/dto/auth-credentials.dto';
 import { JwtPayloadInterface } from './auth/jwt-payload.interface';
 import { AuthService } from './auth/auth.service';
+import { UserDtoOut } from './users/dto/user.dto';
+import { AssetsFacade } from './facade/assets.facade';
+import { CreateAssetsDto } from './assets/dto/create-assets.dto';
+import { UpdateAssetsInformationDto } from './assets/dto/update-assets-information.dto';
+import { ChangeUserBulkDto } from './assets/dto/change-user-bulk.dto';
+import { ChangeAssetInformationBulkDto } from './assets/dto/change-asset-information-bulk.dto';
+import { RemoveAssetsDto } from "./assets/dto/remove-assets.dto";
 
 @Injectable()
 export class Api {
   constructor(
     private authService: AuthService,
     private usersFacade: UsersFacade,
+    private assetsFacade: AssetsFacade,
   ) {}
 
   createUser(createUserDto: CreateUserDto, user: User): Promise<User> {
     return this.usersFacade.createUser(createUserDto, user);
   }
 
-  getUsers(getUsersFilterDto: GetUsersFilterDto): Promise<User[]> {
-    return this.usersFacade.getUsers(getUsersFilterDto);
+  getUsers(
+    getUsersFilterDto: GetUsersFilterDto,
+    user?: User,
+  ): Promise<UserDtoOut[]> {
+    return this.usersFacade.getUsers(getUsersFilterDto, user);
   }
 
   getReachableUsers(user: User): Promise<User[]> {
@@ -93,5 +104,51 @@ export class Api {
     };
     const accessToken = this.authService.sign(payload);
     return { accessToken };
+  }
+
+  createAssets(createAssetsDto: CreateAssetsDto, user: User) {
+    return this.assetsFacade.createAssets(createAssetsDto, user);
+  }
+
+  addNote(param: { note: string; assetId: number }, user: User) {
+    return this.assetsFacade.addNote(param, user);
+  }
+
+  changeUser(assetId: number, userId: number, user: User) {
+    return this.assetsFacade.changeUser(assetId, userId, user);
+  }
+
+  changeAssetInformation(
+    updateAssetsDto: UpdateAssetsInformationDto,
+    assetId: number,
+    user: User,
+  ) {
+    return this.assetsFacade.changeAssetInformation(
+      updateAssetsDto,
+      assetId,
+      user,
+    );
+  }
+
+  getAssetsList() {
+    return this.assetsFacade.getAssetList();
+  }
+
+  changeUserBulk(changeUserBulkDto: ChangeUserBulkDto[], user: User) {
+    return this.assetsFacade.changeUserBulk(changeUserBulkDto, user);
+  }
+
+  changeAssetInformationBulk(
+    changeAssetInformationBulkDto: ChangeAssetInformationBulkDto[],
+    user: User,
+  ) {
+    return this.assetsFacade.changeAssetInformationBulk(
+      changeAssetInformationBulkDto,
+      user,
+    );
+  }
+
+  removeAssets(removeAssetsDto: RemoveAssetsDto, user: User) {
+    return this.assetsFacade.removeAssets(removeAssetsDto, user);
   }
 }
