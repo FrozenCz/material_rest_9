@@ -1,39 +1,37 @@
 import {
-    BaseEntity,
-    Column,
-    Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    Tree,
-    TreeChildren,
-    TreeParent, VersionColumn
-} from "typeorm";
-import {Unit} from '../../units/unit.entity';
-
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Tree,
+  TreeChildren,
+  TreeParent,
+  VersionColumn,
+} from 'typeorm';
+import { Unit } from '../../units/unit.entity';
 
 @Entity()
 @Tree('closure-table')
 export class Location extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @PrimaryGeneratedColumn()
-    id: number
+  @Column()
+  name: string;
 
-    @Column()
-    name: string
+  @TreeChildren()
+  children: Location[];
 
-    @TreeChildren()
-    children: Location[]
+  @TreeParent()
+  parent: Location;
 
-    @TreeParent()
-    parent: Location
+  // @OneToMany(type => Assets, assets => assets.location)
+  // assets: Assets[]
 
-    // @OneToMany(type => Assets, assets => assets.location)
-    // assets: Assets[]
+  @ManyToOne((type) => Unit, (unit) => unit.id, { eager: true })
+  masterUnit: Unit; //unit without parent
 
-    @ManyToOne(type => Unit, unit => unit.id, {eager: true})
-    masterUnit: Unit //unit without parent
-
-    @VersionColumn({default: 1})
-    version: number;
-
+  @VersionColumn({ default: 1 })
+  version: number;
 }

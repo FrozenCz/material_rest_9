@@ -1,15 +1,15 @@
 import {
-  OnGatewayConnection, OnGatewayDisconnect,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer
-} from "@nestjs/websockets";
+  WebSocketServer,
+} from '@nestjs/websockets';
 import { BehaviorSubject } from 'rxjs';
 import { Server, Socket } from 'socket.io';
-import { Assets } from './assets/models/assets.entity';
-import { Logger } from "@nestjs/common";
-
+import { Logger } from '@nestjs/common';
+import { Assets } from '../assets/models/assets.entity';
 
 export enum ChangeType {
   create,
@@ -36,7 +36,9 @@ export interface WsChange {
 }
 
 @WebSocketGateway({ cors: true })
-export class WsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class WsGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   logger: Logger = new Logger('Gateway');
 
   @WebSocketServer()

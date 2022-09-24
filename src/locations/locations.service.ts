@@ -22,7 +22,7 @@ export class LocationsService {
     this.locationsRepository = this.manager.getTreeRepository(Location);
   }
 
-  async getLocationById(id: number): Promise<Location> {
+  async getLocationById(id: string): Promise<Location> {
     const found = this.locationsRepository.findOne({ where: { id } });
     if (!found) {
       throw new NotFoundException(`Location with ID "${id}" not found!`);
@@ -45,7 +45,7 @@ export class LocationsService {
   ): Promise<Location> {
     let parentLocation;
     let unitScopeMasterUnit;
-    const { name, masterUnit, parent = null } = createLocationDto || {};
+    const { name, parent = null } = createLocationDto || {};
 
     if (!user.unit?.id) {
       throw new ForbiddenException(`You need to be settled to any unit!`);
@@ -60,14 +60,15 @@ export class LocationsService {
         parentLocation.masterUnit,
       );
     } else {
-      unitScopeMasterUnit = await this.unitsService.getMasterUnit(masterUnit);
+      // unitScopeMasterUnit = await this.unitsService.getMasterUnit(masterUnit);
+      unitScopeMasterUnit = await this.unitsService.getMasterUnitByUser(user);
     }
 
     const userScopeMasterUnit = await this.unitsService.getMasterUnit(
       user.unit.id,
     );
 
-    if (userScopeMasterUnit !== unitScopeMasterUnit) {
+    if (userScopeMasterUnit.id !== unitScopeMasterUnit.id) {
       throw new ForbiddenException(
         `You are not able to set unit under "${unitScopeMasterUnit}" master unit `,
       );
@@ -80,7 +81,7 @@ export class LocationsService {
     return await location.save();
   }
 
-  async deleteLocation(id: number): Promise<void> {
+  async deleteLocation(id: string): Promise<void> {
     const location = await this.getLocationById(id);
     // todo: kontrola zda lokace nejsou obsazene v nejakych majetkach? i ty pod?
 

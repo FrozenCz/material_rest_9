@@ -14,9 +14,9 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CategorySettingsEnum } from './utils/categorySettings.enum';
 import { CategorySettings } from './models/categorySettings.entity';
 import { AssetsService } from '../assets/assets.service';
-import { SubscribeMessageEnum, WsGateway } from '../ws.gateway';
 import { User } from '../users/models/user.entity';
 import { EntityManager, Repository, TreeRepository } from 'typeorm';
+import { SubscribeMessageEnum, WsGateway } from "../websocket/ws.gateway";
 
 @Injectable()
 export class CategoriesService {

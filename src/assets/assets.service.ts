@@ -21,12 +21,13 @@ import { ChangeAssetInformationBulkDto } from './dto/change-asset-information-bu
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { ProtocolsService } from '../protocols/protocols.service';
 import { RemovingProtocol } from '../protocols/models/protocols.entity';
-import { SubscribeMessageEnum, WsGateway } from '../ws.gateway';
+
 import { HistoryService } from '../history/history.service';
 import { HistoryRelatedTo } from '../history/models/history.model';
 import { noop } from 'rxjs';
 import { AssetNote } from './models/assetNote.entity';
 import { CreateAssetNote } from './models/assetNote.model';
+import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 
 @Injectable()
 export class AssetsService {

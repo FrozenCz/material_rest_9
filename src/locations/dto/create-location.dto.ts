@@ -1,19 +1,12 @@
-import {IsIn, IsInt, IsNotEmpty, IsOptional, IsString} from "class-validator";
-import {Transform} from "class-transformer";
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateLocationDto {
-    @IsString()
-    @IsNotEmpty()
-    name: string
+  @IsString()
+  @IsNotEmpty()
+  name: string;
 
-    @IsNotEmpty()
-    @Transform(value => Number(value.value))
-    @IsInt()
-    masterUnit: number
-
-    @IsOptional()
-    @IsNotEmpty()
-    @Transform(value => Number(value.value))
-    @IsInt()
-    parent: number
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  parent: string;
 }

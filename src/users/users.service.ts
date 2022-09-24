@@ -19,11 +19,11 @@ import { RightsService } from './rights.service';
 import { Rights } from './models/rights.entity';
 import { UpdateUsersDto } from './dto/update-users.dto';
 import { Unit } from '../units/unit.entity';
-import { SubscribeMessageEnum, WsGateway } from '../ws.gateway';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { SubscribeMessageEnum, WsGateway } from "../websocket/ws.gateway";
 
 @Injectable()
 export class UsersService {

@@ -333,4 +333,8 @@ export class UnitsService {
     const haveUser = await this.haveUnitUser(id);
     return !haveUser;
   }
+
+  async getMasterUnitByUser(user: User): Promise<Unit> {
+    return this.getMasterUnit(user.unit.id);
+  }
 }
