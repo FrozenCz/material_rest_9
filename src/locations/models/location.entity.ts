@@ -1,21 +1,25 @@
 import {
   BaseEntity,
   Column,
-  Entity,
+  Entity, Generated,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn, RelationId,
   Tree,
   TreeChildren,
   TreeParent,
-  VersionColumn,
-} from 'typeorm';
+  VersionColumn
+} from "typeorm";
 import { Unit } from '../../units/unit.entity';
 
 @Entity()
 @Tree('closure-table')
 export class Location extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  uuid: string;
+
+  @Column()
+  @Generated()
+  ord: number;
 
   @Column()
   name: string;
@@ -25,6 +29,8 @@ export class Location extends BaseEntity {
 
   @TreeParent()
   parent: Location;
+  @RelationId((loc: Location) => loc.parent)
+  parent_uuid: string;
 
   // @OneToMany(type => Assets, assets => assets.location)
   // assets: Assets[]

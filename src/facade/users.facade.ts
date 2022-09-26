@@ -11,7 +11,9 @@ import { SetUserRightsDto } from 'src/users/dto/set-user-rights.dto';
 import { CreateRightsDto } from 'src/users/dto/create-rights.dto';
 import { AssetsService } from 'src/assets/assets.service';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
-import { UserDtoOut } from '../users/dto/user.dto';
+import { UserOutDto } from '../users/dto/out/User.out.dto';
+import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
+import { Transforms } from '../utils/transforms';
 
 @Injectable()
 export class UsersFacade {
@@ -19,6 +21,7 @@ export class UsersFacade {
     private usersService: UsersService,
     private rightsService: RightsService,
     private assetsService: AssetsService,
+    private wsGateway: WsGateway,
   ) {
     this.usersService.countUsers().then((usersCount) => {
       if (!usersCount) {
@@ -40,13 +43,22 @@ export class UsersFacade {
   }
 
   createUser(createUserDto: CreateUserDto, user: User): Promise<User> {
-    return this.usersService.createUser(createUserDto, user);
+    return Promise.all([
+      this.usersService.createUser(createUserDto, user),
+      this.getReachableUsersMap(user),
+    ]).then(([user, reachableUsers]) => {
+      this.wsGateway.wsChanges$.next({
+        type: SubscribeMessageEnum.usersUpdate,
+        changes: [Transforms.userToUserDto(user, reachableUsers)],
+      });
+      return user;
+    });
   }
 
   async getUsers(
     getUsersFilterDto: GetUsersFilterDto,
     user: User,
-  ): Promise<UserDtoOut[]> {
+  ): Promise<UserOutDto[]> {
     let reachableUsers: Map<number, User> = new Map<number, User>();
     if (user) {
       reachableUsers = await this.getReachableUsersMap(user);
@@ -88,14 +100,31 @@ export class UsersFacade {
     updateUserDto: UpdateUserDto,
     user: User,
   ): Promise<User> {
-    return this.usersService.updateUser(id, updateUserDto, user);
+    return Promise.all([
+      this.usersService.updateUser(id, updateUserDto, user),
+      this.getReachableUsersMap(user),
+    ]).then(([user, users]) => {
+      this.wsGateway.wsChanges$.next({
+        type: SubscribeMessageEnum.usersUpdate,
+        changes: [Transforms.userToUserDto(user, users)],
+      });
+      return user;
+    });
   }
 
   updateUsersUnits(
     updateUsersDto: UpdateUsersDto,
     user: User,
   ): Promise<User>[] | any {
-    return this.usersService.updateUsersUnits(updateUsersDto, user);
+    return Promise.all([
+      this.usersService.updateUsersUnits(updateUsersDto, user),
+      this.getReachableUsersMap(user),
+    ]).then(([users, reachableUsers]) => {
+      this.wsGateway.wsChanges$.next({
+        type: SubscribeMessageEnum.usersUpdate,
+        changes: users.map((u) => Transforms.userToUserDto(u, reachableUsers)),
+      });
+    });
   }
 
   async deleteUser(id: number, user: User): Promise<void> {
@@ -104,7 +133,16 @@ export class UsersFacade {
     if (haveAssets) {
       throw new HttpException('User have some assets!', 405);
     }
-    return this.usersService.deleteUser(userToDelete, user);
+    await Promise.all([
+      this.usersService.deleteUser(userToDelete, user),
+      this.getReachableUsersMap(user),
+    ]).then(([user, users]) => {
+      this.wsGateway.wsChanges$.next({
+        type: SubscribeMessageEnum.usersDelete,
+        changes: [Transforms.userToUserDto(user, users)],
+      });
+    });
+    return;
   }
 
   setUsersRights(
@@ -112,7 +150,17 @@ export class UsersFacade {
     setUserRightsDto: SetUserRightsDto,
     user: User,
   ): Promise<Rights[]> {
-    return this.usersService.setUsersRights(userId, setUserRightsDto, user);
+    return this.usersService
+      .setUsersRights(userId, setUserRightsDto, user)
+      .then(async (rights) => {
+        const reachableUsers = await this.getReachableUsersMap(user);
+        const userUpd = await this.getUserById(userId);
+        this.wsGateway.wsChanges$.next({
+          type: SubscribeMessageEnum.usersUpdate,
+          changes: [Transforms.userToUserDto(userUpd, reachableUsers)],
+        });
+        return rights;
+      });
   }
 
   getRights(): Promise<Rights[]> {

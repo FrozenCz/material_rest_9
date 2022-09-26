@@ -26,7 +26,7 @@ import { SetUserRightsDto } from './dto/set-user-rights.dto';
 import { Rights } from './models/rights.entity';
 import { UpdateUsersDto } from './dto/update-users.dto';
 import { Api } from 'src/api';
-import { UserDtoOut } from './dto/user.dto';
+import { UserOutDto } from "./dto/out/User.out.dto";
 
 @Controller('users')
 export class UsersController {
@@ -47,7 +47,7 @@ export class UsersController {
   getUsers(
     @GetUser() user: User,
     @Query(ValidationPipe) getUsersFilterDto: GetUsersFilterDto,
-  ): Promise<UserDtoOut[]> {
+  ): Promise<UserOutDto[]> {
     return this.api.getUsers(getUsersFilterDto, user);
   }
 

@@ -10,3 +10,14 @@ export class CreateLocationDto {
   @IsString()
   parent: string;
 }
+
+export class UpdateLocationDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+}
+
+export interface UpdateLocation {
+  name: string;
+  uuid: string;
+}

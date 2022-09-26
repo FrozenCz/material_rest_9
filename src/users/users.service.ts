@@ -3,7 +3,6 @@ import {
   ConflictException,
   ForbiddenException,
   forwardRef,
-  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -23,7 +22,6 @@ import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { SubscribeMessageEnum, WsGateway } from "../websocket/ws.gateway";
 
 @Injectable()
 export class UsersService {
@@ -34,7 +32,6 @@ export class UsersService {
     private unitsService: UnitsService,
     @Inject(forwardRef(() => RightsService))
     private rightsService: RightsService,
-    private wsGateway: WsGateway,
   ) {}
 
   /**
@@ -111,11 +108,6 @@ export class UsersService {
     }
     delete user.salt;
     delete user.password;
-
-    this.wsGateway.wsChanges$.next({
-      type: SubscribeMessageEnum.usersUpdate,
-      changes: [user],
-    });
     return user;
   }
 
@@ -185,26 +177,18 @@ export class UsersService {
     }
 
     const updatedUser = await userForUpdate.save();
-    this.wsGateway.wsChanges$.next({
-      type: SubscribeMessageEnum.usersUpdate,
-      changes: [updatedUser],
-    });
-
     return updatedUser;
   }
 
-  async deleteUser(userToDelete: User, user: User): Promise<void> {
+  async deleteUser(userToDelete: User, user: User): Promise<User> {
     const inScope = await this.inScope(userToDelete, user);
 
     if (userToDelete && inScope) {
       userToDelete.active = false;
-      if (await User.save(userToDelete)) {
-        this.wsGateway.wsChanges$.next({
-          type: SubscribeMessageEnum.usersDelete,
-          changes: [userToDelete],
-        });
-      }
-      return;
+      // if (await User.save(userToDelete)) {
+      //
+      // }
+      return User.save(userToDelete);
     }
 
     throw new ForbiddenException(
@@ -250,10 +234,6 @@ export class UsersService {
         }
         try {
           const updUser = await editedUser.save();
-          this.wsGateway.wsChanges$.next({
-            type: SubscribeMessageEnum.usersUpdate,
-            changes: [updUser],
-          });
           return updUser.rights;
         } catch (e) {
           throw new InternalServerErrorException('Setting rights failed');
@@ -289,10 +269,7 @@ export class UsersService {
       const update = await userUpdate.save();
       response.push(update);
     }
-    this.wsGateway.wsChanges$.next({
-      type: SubscribeMessageEnum.usersUpdate,
-      changes: response,
-    });
+
     return response;
   }
 

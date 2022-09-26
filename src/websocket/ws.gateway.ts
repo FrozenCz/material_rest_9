@@ -2,7 +2,6 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
-  SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
@@ -10,6 +9,10 @@ import { BehaviorSubject } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
 import { Assets } from '../assets/models/assets.entity';
+import { Location } from '../locations/models/location.entity';
+import { AssetsModelDto } from '../assets/dto/out/assetModel.dto';
+import { Category } from '../categories/models/category.entity';
+import { UserOutDto } from '../users/dto/out/User.out.dto';
 
 export enum ChangeType {
   create,
@@ -28,12 +31,53 @@ export enum SubscribeMessageEnum {
   categoryDelete = 'categoryDelete',
   usersUpdate = 'usersUpdate',
   usersDelete = 'usersDelete',
+  locationUpdate = 'locationUpdate',
+  locationDelete = 'locationDelete',
 }
 
-export interface WsChange {
-  type: SubscribeMessageEnum;
-  changes: any;
+export interface WsUsersDelete {
+  type: SubscribeMessageEnum.usersDelete;
+  changes: UserOutDto[];
 }
+
+export interface WsUsersUpdate {
+  type: SubscribeMessageEnum.usersUpdate;
+  changes: UserOutDto[];
+}
+
+export interface WsCategoryDelete {
+  type: SubscribeMessageEnum.categoryDelete;
+  changes: number;
+}
+
+export interface WsCategoryUpdate {
+  type: SubscribeMessageEnum.categoryUpdate;
+  changes: Category;
+}
+
+export interface WsAssetsUpdate {
+  type: SubscribeMessageEnum.assetsUpdate;
+  changes: AssetsModelDto[];
+}
+
+export interface WsLocationUpdate {
+  type: SubscribeMessageEnum.locationUpdate;
+  changes: Location;
+}
+
+export interface WsLocationDelete {
+  type: SubscribeMessageEnum.locationDelete;
+  changes: null;
+}
+
+export type WsType =
+  | WsUsersDelete
+  | WsUsersUpdate
+  | WsLocationUpdate
+  | WsLocationDelete
+  | WsAssetsUpdate
+  | WsCategoryUpdate
+  | WsCategoryDelete;
 
 @WebSocketGateway({ cors: true })
 export class WsGateway
@@ -44,9 +88,7 @@ export class WsGateway
   @WebSocketServer()
   server: Server;
 
-  wsChanges$: BehaviorSubject<WsChange> = new BehaviorSubject<WsChange>(
-    undefined,
-  );
+  wsChanges$: BehaviorSubject<WsType> = new BehaviorSubject<WsType>(undefined);
 
   afterInit(server: any): any {
     this.wsChanges$.subscribe((wsChange) => {

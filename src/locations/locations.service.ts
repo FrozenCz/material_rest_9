@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Location } from './models/location.entity';
-import { CreateLocationDto } from './dto/create-location.dto';
+import { CreateLocationDto, UpdateLocation } from './dto/create-location.dto';
 import { UnitsService } from '../units/units.service';
 import { User } from '../users/models/user.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
@@ -23,7 +23,7 @@ export class LocationsService {
   }
 
   async getLocationById(id: string): Promise<Location> {
-    const found = this.locationsRepository.findOne({ where: { id } });
+    const found = this.locationsRepository.findOne({ where: { uuid: id } });
     if (!found) {
       throw new NotFoundException(`Location with ID "${id}" not found!`);
     }
@@ -31,7 +31,7 @@ export class LocationsService {
   }
 
   async listLocations(): Promise<Location[]> {
-    return await this.locationsRepository.findTrees();
+    return await this.locationsRepository.find({ order: { ord: 'ASC' } });
   }
 
   /**
@@ -57,7 +57,7 @@ export class LocationsService {
         throw new NotFoundException(`Location with ID "${parent}" not found! `);
       }
       unitScopeMasterUnit = await this.unitsService.getMasterUnit(
-        parentLocation.masterUnit,
+        parentLocation.masterUnit.id,
       );
     } else {
       // unitScopeMasterUnit = await this.unitsService.getMasterUnit(masterUnit);
@@ -98,9 +98,18 @@ export class LocationsService {
     await query
       .delete()
       .from('location_closure')
-      .where('id_ancestor IN (:...ids)', { ids: children.map((ch) => ch.id) })
+      .where('uuid_ancestor IN (:...ids)', { ids: children.map((ch) => ch.uuid) })
       .execute();
 
     await this.locationsRepository.remove(children.reverse());
+  }
+
+  async updateLocation(
+    updateLocation: UpdateLocation,
+    user: User,
+  ): Promise<Location> {
+    const location = await this.getLocationById(updateLocation.uuid);
+    location.name = updateLocation.name;
+    return location.save();
   }
 }

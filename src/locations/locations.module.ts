@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { LocationsController } from './locations.controller';
 import { LocationsService } from './locations.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PassportModule } from '@nestjs/passport';
@@ -14,7 +13,8 @@ import { Location } from './models/location.entity';
     UsersModule,
     UnitsModule,
   ],
-  controllers: [LocationsController],
+  controllers: [],
   providers: [LocationsService],
+  exports: [LocationsService],
 })
 export class LocationsModule {}

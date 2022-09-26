@@ -1,5 +1,4 @@
-
-export interface UserDtoOut {
+export interface UserOutDto {
   id: number;
   username: string;
   name: string;
@@ -7,4 +6,3 @@ export interface UserDtoOut {
   unit_id: number;
   reachable: boolean;
 }
-

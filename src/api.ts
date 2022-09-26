@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CACHE_MANAGER,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersFacade } from 'src/facade/users.facade';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { User } from 'src/users/models/user.entity';
@@ -11,13 +16,19 @@ import { CreateRightsDto } from 'src/users/dto/create-rights.dto';
 import { AuthCredentialsDto } from './auth/dto/auth-credentials.dto';
 import { JwtPayloadInterface } from './auth/jwt-payload.interface';
 import { AuthService } from './auth/auth.service';
-import { UserDtoOut } from './users/dto/user.dto';
 import { AssetsFacade } from './facade/assets.facade';
 import { CreateAssetsDto } from './assets/dto/create-assets.dto';
 import { UpdateAssetsInformationDto } from './assets/dto/update-assets-information.dto';
 import { ChangeUserBulkDto } from './assets/dto/change-user-bulk.dto';
 import { ChangeAssetInformationBulkDto } from './assets/dto/change-asset-information-bulk.dto';
-import { RemoveAssetsDto } from "./assets/dto/remove-assets.dto";
+import { RemoveAssetsDto } from './assets/dto/remove-assets.dto';
+import { Location } from './locations/models/location.entity';
+import { LocationFacade } from './facade/location.facade';
+import {
+  CreateLocationDto,
+  UpdateLocation,
+} from './locations/dto/create-location.dto';
+import { UserOutDto } from './users/dto/out/User.out.dto';
 
 @Injectable()
 export class Api {
@@ -25,6 +36,7 @@ export class Api {
     private authService: AuthService,
     private usersFacade: UsersFacade,
     private assetsFacade: AssetsFacade,
+    private locationFacade: LocationFacade,
   ) {}
 
   createUser(createUserDto: CreateUserDto, user: User): Promise<User> {
@@ -34,7 +46,7 @@ export class Api {
   getUsers(
     getUsersFilterDto: GetUsersFilterDto,
     user?: User,
-  ): Promise<UserDtoOut[]> {
+  ): Promise<UserOutDto[]> {
     return this.usersFacade.getUsers(getUsersFilterDto, user);
   }
 
@@ -150,5 +162,24 @@ export class Api {
 
   removeAssets(removeAssetsDto: RemoveAssetsDto, user: User) {
     return this.assetsFacade.removeAssets(removeAssetsDto, user);
+  }
+
+  getLocations(): Promise<Location[]> {
+    return this.locationFacade.getLocations();
+  }
+
+  createLocation(createLocationDto: CreateLocationDto, user: User) {
+    return this.locationFacade.createLocation(createLocationDto, user);
+  }
+
+  deleteLocation(id: string) {
+    return this.locationFacade.deleteLocation(id);
+  }
+
+  updateLocation(
+    updateLocation: UpdateLocation,
+    user: User,
+  ): Promise<Location> {
+    return this.locationFacade.updateLocation(updateLocation, user);
   }
 }

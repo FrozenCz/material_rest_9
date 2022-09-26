@@ -27,7 +27,6 @@ import { HistoryRelatedTo } from '../history/models/history.model';
 import { noop } from 'rxjs';
 import { AssetNote } from './models/assetNote.entity';
 import { CreateAssetNote } from './models/assetNote.model';
-import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 
 @Injectable()
 export class AssetsService {
@@ -41,7 +40,6 @@ export class AssetsService {
     private unitsService: UnitsService,
     private connection: Connection,
     private protocolService: ProtocolsService,
-    private gateway: WsGateway,
     private historyService: HistoryService,
   ) {}
 
@@ -84,12 +82,6 @@ export class AssetsService {
         )
         .then(noop);
     }
-
-    this.gateway.wsChanges$.next({
-      changes: [nAsset],
-      type: SubscribeMessageEnum.assetsUpdate,
-    });
-
     return nAsset;
   }
 
@@ -174,10 +166,6 @@ export class AssetsService {
         )
         .then(noop);
     }
-    this.gateway.wsChanges$.next({
-      changes: [savedAsset],
-      type: SubscribeMessageEnum.assetsUpdate,
-    });
     return savedAsset;
   }
 
@@ -247,11 +235,6 @@ export class AssetsService {
         )
         .then(noop);
     }
-
-    this.gateway.wsChanges$.next({
-      changes: [savedAsset],
-      type: SubscribeMessageEnum.assetsUpdate,
-    });
     return savedAsset;
   }
 
@@ -259,52 +242,36 @@ export class AssetsService {
     changeUserBulkDto: ChangeUserBulkDto[],
     user: User,
   ): Promise<Assets[]> {
-    return this.connection
-      .transaction(async (manager) => {
-        return await Promise.all(
-          changeUserBulkDto.map(async (change) => {
-            return await this.changeUser(
-              change.assetId,
-              change.newUserId,
-              user,
-              manager,
-            );
-          }),
-        );
-      })
-      .then((changedAssets) => {
-        this.gateway.wsChanges$.next({
-          changes: changedAssets,
-          type: SubscribeMessageEnum.assetsUpdate,
-        });
-        return changedAssets;
-      });
+    return this.connection.transaction(async (manager) => {
+      return await Promise.all(
+        changeUserBulkDto.map(async (change) => {
+          return await this.changeUser(
+            change.assetId,
+            change.newUserId,
+            user,
+            manager,
+          );
+        }),
+      );
+    });
   }
 
   changeAssetInformationBulk(
     changeAssetInformationBulkDto: ChangeAssetInformationBulkDto[],
     user: User,
   ) {
-    return this.connection
-      .transaction(async (manager) => {
-        return await Promise.all(
-          changeAssetInformationBulkDto.map(async (change) => {
-            return await this.changeAssetInformation(
-              change,
-              change.assetId,
-              user,
-              manager,
-            );
-          }),
-        );
-      })
-      .then((changedAssets) => {
-        this.gateway.wsChanges$.next({
-          changes: changedAssets,
-          type: SubscribeMessageEnum.assetsUpdate,
-        });
-        return changedAssets;
-      });
+    return this.connection.transaction(async (manager) => {
+      return await Promise.all(
+        changeAssetInformationBulkDto.map(async (change) => {
+          return await this.changeAssetInformation(
+            change,
+            change.assetId,
+            user,
+            manager,
+          );
+        }),
+      );
+    });
   }
 
   async removeAssets(
@@ -351,10 +318,6 @@ export class AssetsService {
                 .then(noop);
             });
           }
-          this.gateway.wsChanges$.next({
-            changes: changedAssets,
-            type: SubscribeMessageEnum.assetsUpdate,
-          });
         })
         .then(() => {
           return this.protocolService.createRemovingProtocol(

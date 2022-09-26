@@ -1,31 +1,37 @@
 import {
   Body,
+  CacheInterceptor,
   Controller,
   Delete,
   Get,
-  Param,
-  ParseIntPipe,
+  Param, Patch,
   Post,
+  Put,
   UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
-import { LocationsService } from './locations.service';
+  UseInterceptors,
+  ValidationPipe
+} from "@nestjs/common";
 import { Location } from './models/location.entity';
-import { CreateLocationDto } from './dto/create-location.dto';
+import {
+  CreateLocationDto,
+  UpdateLocationDto,
+} from './dto/create-location.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RightsGuard } from '../guards/rights.guard';
 import { RightsAllowed } from '../guards/rights-allowed.decorator';
 import { RightsTag } from '../users/config/rights.list';
 import { GetUser } from '../users/utils/get-user.decorator';
 import { User } from '../users/models/user.entity';
+import { Api } from '../api';
 
 @Controller('/locations')
+@UseInterceptors(CacheInterceptor)
 export class LocationsController {
-  constructor(private locationsService: LocationsService) {}
+  constructor(private api: Api) {}
 
   @Get()
   getLocations(): Promise<Location[]> {
-    return this.locationsService.listLocations();
+    return this.api.getLocations();
   }
 
   @Post()
@@ -35,12 +41,23 @@ export class LocationsController {
     @GetUser() user: User,
     @Body(ValidationPipe) createLocationDto: CreateLocationDto,
   ): Promise<Location> {
-    return this.locationsService.createLocation(createLocationDto, user);
+    return this.api.createLocation(createLocationDto, user);
+  }
+
+  @Patch('/:uuid')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.createLocation)
+  updateLocation(
+    @GetUser() user: User,
+    @Body(ValidationPipe) updateLocation: UpdateLocationDto,
+    @Param('uuid') uuid: string,
+  ): Promise<Location> {
+    return this.api.updateLocation({ ...updateLocation, uuid }, user);
   }
 
   @Delete('/:id')
   deleteLocation(@Param('id') id: string): Promise<void> {
-    return this.locationsService.deleteLocation(id);
+    return this.api.deleteLocation(id);
     //todo: nejak kontrolovat kdo je zakladal ??? hierarchie?
   }
 }
