@@ -21,3 +21,8 @@ export interface UpdateLocation {
   name: string;
   uuid: string;
 }
+
+export class SaveNfcDTO {
+  @IsString()
+  nfcId: string;
+}

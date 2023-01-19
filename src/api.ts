@@ -25,9 +25,9 @@ import { RemoveAssetsDto } from './assets/dto/remove-assets.dto';
 import { Location } from './locations/models/location.entity';
 import { LocationFacade } from './facade/location.facade';
 import {
-  CreateLocationDto,
-  UpdateLocation,
-} from './locations/dto/create-location.dto';
+  CreateLocationDto, SaveNfcDTO,
+  UpdateLocation
+} from "./locations/dto/create-location.dto";
 import { UserOutDto } from './users/dto/out/User.out.dto';
 
 @Injectable()
@@ -181,5 +181,9 @@ export class Api {
     user: User,
   ): Promise<Location> {
     return this.locationFacade.updateLocation(updateLocation, user);
+  }
+
+  saveNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
+    return this.locationFacade.safeNfcId(locationUuid, saveNfcId, user);
   }
 }

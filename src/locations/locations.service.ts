@@ -4,7 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Location } from './models/location.entity';
-import { CreateLocationDto, UpdateLocation } from './dto/create-location.dto';
+import {
+  CreateLocationDto,
+  SaveNfcDTO,
+  UpdateLocation,
+} from './dto/create-location.dto';
 import { UnitsService } from '../units/units.service';
 import { User } from '../users/models/user.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
@@ -98,7 +102,9 @@ export class LocationsService {
     await query
       .delete()
       .from('location_closure')
-      .where('uuid_ancestor IN (:...ids)', { ids: children.map((ch) => ch.uuid) })
+      .where('uuid_ancestor IN (:...ids)', {
+        ids: children.map((ch) => ch.uuid),
+      })
       .execute();
 
     await this.locationsRepository.remove(children.reverse());
@@ -110,6 +116,14 @@ export class LocationsService {
   ): Promise<Location> {
     const location = await this.getLocationById(updateLocation.uuid);
     location.name = updateLocation.name;
+    return location.save();
+  }
+
+  async safeNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
+    const location = await Location.findOneOrFail({
+      where: { uuid: locationUuid },
+    });
+    location.nfcId = saveNfcId.nfcId;
     return location.save();
   }
 }

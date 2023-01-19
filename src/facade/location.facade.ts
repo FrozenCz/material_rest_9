@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LocationsService } from '../locations/locations.service';
 import { Location } from '../locations/models/location.entity';
-import { CreateLocationDto, UpdateLocation } from "../locations/dto/create-location.dto";
+import { CreateLocationDto, SaveNfcDTO, UpdateLocation } from "../locations/dto/create-location.dto";
 import { User } from '../users/models/user.entity';
 
 @Injectable()
@@ -25,5 +25,9 @@ export class LocationFacade {
 
   updateLocation(updateLocation: UpdateLocation, user: User) {
     return this.locationService.updateLocation(updateLocation, user);
+  }
+
+  safeNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
+    return this.locationService.safeNfcId(locationUuid, saveNfcId, user);
   }
 }

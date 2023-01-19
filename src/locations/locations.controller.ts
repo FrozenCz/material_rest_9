@@ -13,9 +13,9 @@ import {
 } from "@nestjs/common";
 import { Location } from './models/location.entity';
 import {
-  CreateLocationDto,
-  UpdateLocationDto,
-} from './dto/create-location.dto';
+  CreateLocationDto, SaveNfcDTO,
+  UpdateLocationDto
+} from "./dto/create-location.dto";
 import { AuthGuard } from '@nestjs/passport';
 import { RightsGuard } from '../guards/rights.guard';
 import { RightsAllowed } from '../guards/rights-allowed.decorator';
@@ -53,6 +53,17 @@ export class LocationsController {
     @Param('uuid') uuid: string,
   ): Promise<Location> {
     return this.api.updateLocation({ ...updateLocation, uuid }, user);
+  }
+
+  @Patch('/:uuid/nfc')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.createLocation)
+  saveNfcId(
+    @GetUser() user: User,
+    @Body(ValidationPipe) saveNfcId: SaveNfcDTO,
+    @Param('uuid') locationUuid: string,
+  ): Promise<Location> {
+    return this.api.saveNfcId(locationUuid, saveNfcId, user);
   }
 
   @Delete('/:id')

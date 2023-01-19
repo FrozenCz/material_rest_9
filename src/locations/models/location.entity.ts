@@ -21,6 +21,9 @@ export class Location extends BaseEntity {
   @Generated()
   ord: number;
 
+  @Column({ nullable: true })
+  nfcId: string;
+
   @Column()
   name: string;
 
