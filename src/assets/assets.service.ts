@@ -27,6 +27,7 @@ import { HistoryRelatedTo } from '../history/models/history.model';
 import { noop } from 'rxjs';
 import { AssetNote } from './models/assetNote.entity';
 import { CreateAssetNote } from './models/assetNote.model';
+import { Location } from '../locations/models/location.entity';
 
 @Injectable()
 export class AssetsService {
@@ -122,6 +123,14 @@ export class AssetsService {
     const asset = await this.getAsset(assetId);
     const changedFrom = { ...asset };
     const unitId = (await asset.user).unit.id;
+
+    if (updateAssetsDto.location_uuid) {
+      asset.location = Location.findOne({
+        where: { uuid: updateAssetsDto.location_uuid },
+      });
+    } else {
+      asset.location = Promise.resolve(null);
+    }
 
     const inTree = await this.unitsService.isManagerInTree(unitId, user);
 

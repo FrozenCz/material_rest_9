@@ -13,6 +13,7 @@ import { User } from '../../users/models/user.entity';
 import { Category } from '../../categories/models/category.entity';
 import { RemovingProtocol } from '../../protocols/models/protocols.entity';
 import { AssetNote } from './assetNote.entity';
+import { Location } from '../../locations/models/location.entity';
 
 export enum AssetState {
   actual,
@@ -48,8 +49,13 @@ export class Assets extends BaseEntity {
   @Column({ length: 20, nullable: true })
   document: string;
 
-  @Column({ length: 50, nullable: true })
-  location: string;
+  @ManyToOne((type) => Location, (location) => location.uuid, {
+    lazy: true,
+    nullable: true,
+  })
+  location: Promise<Location>;
+  @RelationId((asset: Assets) => asset.location)
+  location_uuid: string;
 
   @Column({ length: 150, nullable: true })
   locationEtc: string;

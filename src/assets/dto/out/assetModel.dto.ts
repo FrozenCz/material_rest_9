@@ -13,7 +13,7 @@ export interface AssetsModelDto {
   inquiryDate: Date;
   document: string;
   inquiryPrice: number;
-  location: string;
+  location_uuid: string | null;
   locationEtc: string;
   note: string;
   state: AssetState;

@@ -14,7 +14,7 @@ services:
       - ./db-init/db.sql:/docker-entrypoint-initdb.d/db.sql
       - postgres:/data/postgres
     ports:
-      - 5432:5434
+      - 5432
     #command: --init-file /data/application/db.sql
     networks:
       - dockerNet
