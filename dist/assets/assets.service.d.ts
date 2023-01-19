@@ -1,0 +1,37 @@
+import { CreateAssetsDto } from './dto/create-assets.dto';
+import { Assets } from './models/assets.entity';
+import { User } from '../users/models/user.entity';
+import { CategoriesService } from '../categories/categories.service';
+import { UsersService } from '../users/users.service';
+import { UnitsService } from '../units/units.service';
+import { UpdateAssetsInformationDto } from './dto/update-assets-information.dto';
+import { ChangeUserBulkDto } from './dto/change-user-bulk.dto';
+import { Connection, EntityManager, Repository } from 'typeorm';
+import { ChangeAssetInformationBulkDto } from './dto/change-asset-information-bulk.dto';
+import { RemoveAssetsDto } from './dto/remove-assets.dto';
+import { ProtocolsService } from '../protocols/protocols.service';
+import { RemovingProtocol } from '../protocols/models/protocols.entity';
+import { HistoryService } from '../history/history.service';
+import { AssetNote } from './models/assetNote.entity';
+import { CreateAssetNote } from './models/assetNote.model';
+export declare class AssetsService {
+    private assetsRepository;
+    private categoriesService;
+    private usersService;
+    private unitsService;
+    private connection;
+    private protocolService;
+    private historyService;
+    constructor(assetsRepository: Repository<Assets>, categoriesService: CategoriesService, usersService: UsersService, unitsService: UnitsService, connection: Connection, protocolService: ProtocolsService, historyService: HistoryService);
+    createAssets(newAsset: CreateAssetsDto, creator: User): Promise<any>;
+    getAssetsList(): Promise<Assets[]>;
+    getAsset(id: number): Promise<Assets>;
+    changeAssetInformation(updateAssetsDto: UpdateAssetsInformationDto, assetId: number, user: User, managerForTransaction?: EntityManager): Promise<Assets>;
+    getAssets(assetsIds: number[]): Promise<Assets[]>;
+    changeUser(assetId: number, userId: number, user: User, managerForTransaction?: EntityManager): Promise<Assets>;
+    changeUserBulk(changeUserBulkDto: ChangeUserBulkDto[], user: User): Promise<Assets[]>;
+    changeAssetInformationBulk(changeAssetInformationBulkDto: ChangeAssetInformationBulkDto[], user: User): Promise<Assets[]>;
+    removeAssets(removeAssetsDto: RemoveAssetsDto, user: User): Promise<RemovingProtocol>;
+    haveSomeAssets(user: User): Promise<boolean>;
+    addNote(createAssetNote: CreateAssetNote, user: any): Promise<AssetNote>;
+}
