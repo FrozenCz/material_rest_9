@@ -4,18 +4,20 @@ import {
   Controller,
   Delete,
   Get,
-  Param, Patch,
+  Param,
+  Patch,
   Post,
   Put,
   UseGuards,
   UseInterceptors,
-  ValidationPipe
-} from "@nestjs/common";
+  ValidationPipe,
+} from '@nestjs/common';
 import { Location } from './models/location.entity';
 import {
-  CreateLocationDto, SaveNfcDTO,
-  UpdateLocationDto
-} from "./dto/create-location.dto";
+  CreateLocationDto,
+  SaveNfcDTO,
+  UpdateLocationDto,
+} from './dto/create-location.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RightsGuard } from '../guards/rights.guard';
 import { RightsAllowed } from '../guards/rights-allowed.decorator';
