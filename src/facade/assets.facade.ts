@@ -100,4 +100,8 @@ export class AssetsFacade {
         });
       });
   }
+
+  getAssetAttachment(attachmentId: string) {
+    return this.assetsService.getAssetAttachment(attachmentId);
+  }
 }

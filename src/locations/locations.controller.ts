@@ -1,6 +1,5 @@
 import {
   Body,
-  CacheInterceptor,
   Controller,
   Delete,
   Get,
@@ -27,7 +26,6 @@ import { User } from '../users/models/user.entity';
 import { Api } from '../api';
 
 @Controller('/locations')
-@UseInterceptors(CacheInterceptor)
 export class LocationsController {
   constructor(private api: Api) {}
 

@@ -1,9 +1,4 @@
-import {
-  CACHE_MANAGER,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersFacade } from 'src/facade/users.facade';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { User } from 'src/users/models/user.entity';
@@ -25,10 +20,17 @@ import { RemoveAssetsDto } from './assets/dto/remove-assets.dto';
 import { Location } from './locations/models/location.entity';
 import { LocationFacade } from './facade/location.facade';
 import {
-  CreateLocationDto, SaveNfcDTO,
-  UpdateLocation
-} from "./locations/dto/create-location.dto";
+  CreateLocationDto,
+  SaveNfcDTO,
+  UpdateLocation,
+} from './locations/dto/create-location.dto';
 import { UserOutDto } from './users/dto/out/User.out.dto';
+import { AddImageToAssetDto } from './assets/dto/add-image-to-asset.dto';
+import { Assets } from './assets/models/assets.entity';
+import {
+  AssetAttachmentsEntity,
+  AssetAttachmentType,
+} from './assets/models/assets-attachment.entity';
 
 @Injectable()
 export class Api {
@@ -185,5 +187,31 @@ export class Api {
 
   saveNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
     return this.locationFacade.safeNfcId(locationUuid, saveNfcId, user);
+  }
+
+  async addImageToAsset(
+    addImageToAssetDto: AddImageToAssetDto,
+    assetId: number,
+  ) {
+    const asset = await Assets.findOne({
+      where: {
+        id: assetId,
+      },
+    });
+
+    const newAttach = new AssetAttachmentsEntity();
+    newAttach.asset = asset;
+    newAttach.filename = addImageToAssetDto.filename;
+    newAttach.binaryData = Buffer.from(
+      addImageToAssetDto.base64.split(';base64,').pop(),
+      'base64',
+    );
+    newAttach.type = AssetAttachmentType.image;
+    await newAttach.save();
+    return;
+  }
+
+  getAssetAttachment(attachmentId: string): Promise<AssetAttachmentsEntity> {
+    return this.assetsFacade.getAssetAttachment(attachmentId);
   }
 }

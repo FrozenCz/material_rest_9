@@ -28,12 +28,15 @@ import { noop } from 'rxjs';
 import { AssetNote } from './models/assetNote.entity';
 import { CreateAssetNote } from './models/assetNote.model';
 import { Location } from '../locations/models/location.entity';
+import { AssetAttachmentsEntity } from './models/assets-attachment.entity';
 
 @Injectable()
 export class AssetsService {
   constructor(
     @InjectRepository(Assets)
     private assetsRepository: Repository<Assets>,
+    @InjectRepository(AssetAttachmentsEntity)
+    private assetsAttachmentRepository: Repository<AssetAttachmentsEntity>,
     @Inject(forwardRef(() => CategoriesService))
     private categoriesService: CategoriesService,
     @Inject(forwardRef(() => UsersService))
@@ -354,5 +357,27 @@ export class AssetsService {
     const savedNote = await note.save();
     console.log(savedNote);
     return savedNote;
+  }
+
+  async getAssetAttachment(attachmentId: string) {
+    const attachment = await this.findAssetAttachmentWithBinaryById(
+      attachmentId,
+    );
+    if (!attachment) {
+      throw new NotFoundException('Contract attachment not found');
+    }
+    return attachment;
+  }
+
+  private async findAssetAttachmentWithBinaryById(
+    id: string,
+  ): Promise<AssetAttachmentsEntity> {
+    return await this.assetsAttachmentRepository
+      .createQueryBuilder('assets_attachments')
+      .addSelect(['assets_attachments.binaryData'])
+      .where('assets_attachments.attachment_id = :attachment_id', {
+        attachment_id: id,
+      })
+      .getOne();
   }
 }

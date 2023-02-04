@@ -7,9 +7,10 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Res, StreamableFile,
   UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
+  ValidationPipe
+} from "@nestjs/common";
 import { AuthGuard } from '@nestjs/passport';
 import { CreateAssetsDto } from './dto/create-assets.dto';
 import { GetUser } from '../users/utils/get-user.decorator';
@@ -25,10 +26,23 @@ import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { CreateAssetNoteDto } from './dto/create-asset-note.dto';
 import { AssetsModelDto } from './dto/out/assetModel.dto';
 import { Api } from '../api';
+import { AddImageToAssetDto } from './dto/add-image-to-asset.dto';
+import { Response } from 'express';
 
 @Controller('assets')
 export class AssetsController {
   constructor(private api: Api) {}
+
+  @Get('attachments/:attachment_id/:filename')
+  async getAssetAttachment(
+    @Param('attachment_id') attachmentId: string,
+    @Res() res: Response,
+  ): Promise<any> {
+    const attachEnt = await this.api.getAssetAttachment(attachmentId);
+
+    res.writeHead(200, {'Content-Type': 'image/png'});
+    res.end(attachEnt.binaryData);
+  }
 
   @Post()
   @UseGuards(AuthGuard(), RightsGuard)
@@ -70,6 +84,17 @@ export class AssetsController {
     @GetUser() user: User,
   ): Promise<Assets> {
     return this.api.changeAssetInformation(updateAssetsDto, assetId, user);
+  }
+
+  @Post(':id/images')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.changeAssetsInformation)
+  addImageToAsset(
+    @Body(ValidationPipe) addImageToAssetDto: AddImageToAssetDto,
+    @Param('id', ParseIntPipe) assetId: number,
+    @GetUser() user: User,
+  ): Promise<void> {
+    return this.api.addImageToAsset(addImageToAssetDto, assetId);
   }
 
   @Get()

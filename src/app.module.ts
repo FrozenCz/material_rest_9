@@ -1,4 +1,4 @@
-import { CacheModule, Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -24,7 +24,8 @@ import { AssetsController } from './assets/assets.controller';
 import { AssetsFacade } from './facade/assets.facade';
 import { LocationSubscriber } from './websocket/subscribers/location.subscriber';
 import { LocationsController } from './locations/locations.controller';
-import { LocationFacade } from "./facade/location.facade";
+import { LocationFacade } from './facade/location.facade';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 const controllers = [
   UsersController,
@@ -40,7 +41,6 @@ const facades = [UsersFacade, AssetsFacade, LocationFacade];
 
 @Module({
   imports: [
-    CacheModule.register(),
     ConfigModule.forRoot({ envFilePath: [`.env.${process.env.STAGE}`] }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -73,6 +73,11 @@ const facades = [UsersFacade, AssetsFacade, LocationFacade];
     WsModule,
   ],
   controllers: [...controllers],
-  providers: [AppService, Api, ...facades, ...subscribers],
+  providers: [
+    AppService,
+    Api,
+    ...facades,
+    ...subscribers,
+  ],
 })
 export class AppModule {}

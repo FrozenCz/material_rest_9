@@ -10,10 +10,12 @@ import { HistoryModule } from '../history/history.module';
 import { WsModule } from '../websocket/ws.module';
 import { Assets } from "./models/assets.entity";
 import { AssetNote } from "./models/assetNote.entity";
+import { AssetAttachmentsEntity } from "./models/assets-attachment.entity";
+
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Assets, AssetNote]),
+    TypeOrmModule.forFeature([Assets, AssetNote, AssetAttachmentsEntity]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     forwardRef(() => CategoriesModule),
     ProtocolsModule,
