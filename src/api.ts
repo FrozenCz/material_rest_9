@@ -200,13 +200,13 @@ export class Api {
     });
 
     const newAttach = new AssetAttachmentsEntity();
-    newAttach.asset = asset;
     newAttach.filename = addImageToAssetDto.filename;
     newAttach.binaryData = Buffer.from(
       addImageToAssetDto.base64.split(';base64,').pop(),
       'base64',
     );
     newAttach.type = AssetAttachmentType.image;
+    newAttach.asset = asset;
     await newAttach.save();
     return;
   }

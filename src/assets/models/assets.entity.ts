@@ -14,6 +14,7 @@ import { Category } from '../../categories/models/category.entity';
 import { RemovingProtocol } from '../../protocols/models/protocols.entity';
 import { AssetNote } from './assetNote.entity';
 import { Location } from '../../locations/models/location.entity';
+import { AssetAttachmentsEntity } from './assets-attachment.entity';
 
 export enum AssetState {
   actual,
@@ -103,6 +104,16 @@ export class Assets extends BaseEntity {
     referencedColumnName: 'assetNoteId',
   })
   assetNotes: AssetNote[];
+
+  @OneToMany(
+    () => AssetAttachmentsEntity,
+    (assetAttachment) => assetAttachment.asset,
+    {
+      eager: true,
+      cascade: true,
+    },
+  )
+  attachments: AssetAttachmentsEntity[];
 
   //TODO: @ManyToOne(type => Locations )
 

@@ -90,23 +90,27 @@ export class AssetsService {
   }
 
   async getAssetsList(): Promise<Assets[]> {
-    const query = await this.assetsRepository.createQueryBuilder('assets');
-    query
-      .leftJoinAndSelect('assets.user', 'users')
-      .leftJoinAndSelect('assets.category', 'categories')
-      .leftJoinAndSelect('users.unit', 'units')
-      .leftJoinAndSelect('assets.removingProtocol', 'protocols')
-      .select([
-        'assets',
-        'protocols',
-        'users.id',
-        'users.name',
-        'users.surname',
-        'categories.id',
-        'units.id',
-        'units.name',
-      ]);
-    return query.getMany();
+    // const query = await this.assetsRepository.createQueryBuilder('assets');
+    // query
+    //   .leftJoinAndSelect('assets.user', 'users')
+    //   .leftJoinAndSelect('assets.category', 'categories')
+    //   .leftJoinAndSelect('users.unit', 'units')
+    //   .leftJoinAndSelect('assets.removingProtocol', 'protocols')
+    //   .leftJoinAndSelect('assets.assetAttachments', 'assetAttachments')
+    //   .select([
+    //     'assets',
+    //     'protocols',
+    //     'users.id',
+    //     'users.name',
+    //     'users.surname',
+    //     'categories.id',
+    //     'units.id',
+    //     'units.name',
+    //     'assetAttachments'
+    //   ]);
+
+    // return query.getMany();
+    return Assets.find();
   }
 
   async getAsset(id: number): Promise<Assets> {
@@ -355,7 +359,6 @@ export class AssetsService {
     note.asset = asset;
 
     const savedNote = await note.save();
-    console.log(savedNote);
     return savedNote;
   }
 

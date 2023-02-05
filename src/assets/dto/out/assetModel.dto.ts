@@ -1,4 +1,5 @@
 import { AssetState } from '../../models/assets.entity';
+import { AssetAttachmentType } from "../../models/assets-attachment.entity";
 
 export interface AssetsModelDto {
   id: number;
@@ -19,4 +20,12 @@ export interface AssetsModelDto {
   state: AssetState;
   removingProtocol_id: number | undefined;
   version: number;
+  attachments: AssetsAttachmentsDto[];
+}
+
+export interface AssetsAttachmentsDto {
+  uuid: string;
+  filename: string;
+  url: string;
+  type: AssetAttachmentType;
 }

@@ -26,6 +26,10 @@ import { LocationSubscriber } from './websocket/subscribers/location.subscriber'
 import { LocationsController } from './locations/locations.controller';
 import { LocationFacade } from './facade/location.facade';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import {
+  AssetAttachmentSubscriber,
+  AssetSubscriber,
+} from './websocket/subscribers/asset.subscriber';
 
 const controllers = [
   UsersController,
@@ -35,7 +39,11 @@ const controllers = [
   LocationsController,
 ];
 
-const subscribers = [LocationSubscriber];
+const subscribers = [
+  LocationSubscriber,
+  AssetSubscriber,
+  AssetAttachmentSubscriber,
+];
 
 const facades = [UsersFacade, AssetsFacade, LocationFacade];
 
@@ -73,11 +81,6 @@ const facades = [UsersFacade, AssetsFacade, LocationFacade];
     WsModule,
   ],
   controllers: [...controllers],
-  providers: [
-    AppService,
-    Api,
-    ...facades,
-    ...subscribers,
-  ],
+  providers: [AppService, Api, ...facades, ...subscribers],
 })
 export class AppModule {}
