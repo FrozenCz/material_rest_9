@@ -6,7 +6,6 @@ import {
   RemoveEvent,
   UpdateEvent,
 } from 'typeorm';
-import { Location } from '../../locations/models/location.entity';
 import { SubscribeMessageEnum, WsGateway } from '../ws.gateway';
 import { noop } from 'rxjs';
 import { Logger } from '@nestjs/common';
@@ -93,9 +92,12 @@ export class AssetAttachmentSubscriber
   }
 
   private async handleUpdate(entity: AssetAttachmentsEntity) {
-    this.wsGateway.wsChanges$.next({
-      type: SubscribeMessageEnum.assetsUpdate,
-      changes: [Transforms.assetToAssetDto(await entity.asset)],
-    });
+    setTimeout(async () => {
+      const assetWithAttachments = await Assets.findOne({where: {id: entity.asset.id}});
+      this.wsGateway.wsChanges$.next({
+        type: SubscribeMessageEnum.assetsUpdate,
+        changes: [Transforms.assetToAssetDto(assetWithAttachments)],
+      });
+    })
   }
 }

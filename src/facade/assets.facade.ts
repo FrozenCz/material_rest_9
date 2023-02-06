@@ -104,4 +104,8 @@ export class AssetsFacade {
   getAssetAttachment(attachmentId: string) {
     return this.assetsService.getAssetAttachment(attachmentId);
   }
+
+  async getAssetDetail(assetId: number) {
+    return Transforms.assetToAssetDto(await this.assetsService.getAsset(assetId))
+  }
 }

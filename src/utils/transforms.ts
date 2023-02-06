@@ -9,9 +9,6 @@ import { AssetAttachmentsEntity } from '../assets/models/assets-attachment.entit
 
 export abstract class Transforms {
   public static assetToAssetDto(asset: Assets): AssetsModelDto {
-    if (asset.attachments?.length > 0) {
-      console.log(asset.attachments.length);
-    }
     return {
       ...asset,
       removingProtocol_id: null,

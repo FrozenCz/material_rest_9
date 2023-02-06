@@ -33,7 +33,7 @@ import { Response } from 'express';
 export class AssetsController {
   constructor(private api: Api) {}
 
-  @Get('attachments/:attachment_id/:filename')
+  @Get(':assetId/attachments/:attachment_id/:filename')
   async getAssetAttachment(
     @Param('attachment_id') attachmentId: string,
     @Res() res: Response,
@@ -97,10 +97,19 @@ export class AssetsController {
     return this.api.addImageToAsset(addImageToAssetDto, assetId);
   }
 
+  @Get(':id')
+  getAssetDetail(
+    @Param('id', ParseIntPipe) assetId: number,
+  ): Promise<AssetsModelDto> {
+    return this.api.getAssetDetail(assetId);
+  }
+
   @Get()
   getAssetsList(): Promise<AssetsModelDto[]> {
     return this.api.getAssetsList();
   }
+
+
 
   @Patch('/changeAssetUserBulk')
   @UseGuards(AuthGuard(), RightsGuard)

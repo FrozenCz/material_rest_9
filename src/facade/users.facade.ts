@@ -11,9 +11,10 @@ import { SetUserRightsDto } from 'src/users/dto/set-user-rights.dto';
 import { CreateRightsDto } from 'src/users/dto/create-rights.dto';
 import { AssetsService } from 'src/assets/assets.service';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
-import { UserOutDto } from '../users/dto/out/User.out.dto';
+import { SimpleUser, UserOutDto } from '../users/dto/out/User.out.dto';
 import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 import { Transforms } from '../utils/transforms';
+import { RightsTag } from '../users/config/rights.list';
 
 @Injectable()
 export class UsersFacade {
@@ -71,7 +72,7 @@ export class UsersFacade {
           name: u.name,
           surname: u.surname,
           reachable: !!reachableUsers.get(u.id),
-          unit_id: u.unit.id,
+          unit_id: u.unit?.id,
         };
       });
     });
@@ -173,5 +174,21 @@ export class UsersFacade {
 
   async validateUser(authCredentialsDto: AuthCredentialsDto): Promise<User> {
     return this.usersService.validateUser(authCredentialsDto);
+  }
+
+  getCaretakers(): Promise<SimpleUser[]> {
+    return this.usersService
+      .getUsersByRightTag(RightsTag.createAssets)
+      .then((users) =>
+        users.map((user) => {
+          return {
+            name: user.name,
+            surname: user.surname,
+            username: user.username,
+            unit_name: user.unit?.name,
+            unit_id: user.unit?.id,
+          };
+        }),
+      );
   }
 }

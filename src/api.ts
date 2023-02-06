@@ -214,4 +214,12 @@ export class Api {
   getAssetAttachment(attachmentId: string): Promise<AssetAttachmentsEntity> {
     return this.assetsFacade.getAssetAttachment(attachmentId);
   }
+
+  getAssetDetail(assetId: number) {
+    return this.assetsFacade.getAssetDetail(assetId);
+  }
+
+  getCaretakers() {
+    return this.usersFacade.getCaretakers();
+  }
 }

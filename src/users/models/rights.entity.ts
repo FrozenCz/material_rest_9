@@ -1,24 +1,22 @@
-import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from 'typeorm';
-import {RightsCategoryEnum, RightsTag} from "../config/rights.list";
-
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { RightsCategoryEnum, RightsTag } from '../config/rights.list';
 
 @Entity()
-export class Rights extends BaseEntity{
-
+export class Rights extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column( {unique: true})
+  @Column({ unique: true })
   tag: RightsTag;
 
-  @Column({length: 100})
+  @Column({ length: 100 })
   name: string;
 
-  @Column({length: 200, nullable: true})
+  @Column({ length: 200, nullable: true })
   description: string;
 
-  @Column( )
-  relatedTo: RightsCategoryEnum
+  @Column()
+  relatedTo: RightsCategoryEnum;
 
   // @ManyToMany(type=> User, {cascade: true})
   // @JoinTable({
@@ -27,5 +25,4 @@ export class Rights extends BaseEntity{
   //   inverseJoinColumn: {name: 'user_id', referencedColumnName: 'id'}
   // })
   // users: User[]
-
 }

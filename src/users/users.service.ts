@@ -20,8 +20,9 @@ import { UpdateUsersDto } from './dto/update-users.dto';
 import { Unit } from '../units/unit.entity';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { RightsTag } from './config/rights.list';
 
 @Injectable()
 export class UsersService {
@@ -134,23 +135,13 @@ export class UsersService {
    */
   async getUsers(getUsersFilterDto: GetUsersFilterDto): Promise<User[]> {
     const { unitId, unitIds } = getUsersFilterDto || {};
-    const query = this.userRepository
-      .createQueryBuilder('user')
-      .addSelect(['user.unit'])
-      .leftJoinAndSelect('user.unit', 'units')
-      .where('user.id != 1')
-      .andWhere('user.active = true');
-
     if (unitId) {
-      query.where('user.unit = :unit', { unit: unitId });
+      return User.find({ where: { active: true, unit: { id: unitId } } });
+    } else if (unitIds) {
+      return User.find({ where: { active: true, unit: { id: In(unitIds) } } });
+    } else {
+      return User.find({ where: { active: true } });
     }
-
-    if (unitIds) {
-      query.where('user.unit IN (:...unitIds)', { unitIds });
-    }
-
-    const users = await query.getMany();
-    return users;
   }
 
   /**
@@ -286,7 +277,11 @@ export class UsersService {
 
   async getReachableUser(userId: number, user: User): Promise<User> {
     const usrs = await this.getReachableUsers(user);
-    const reached = usrs.find((user) => user.id === userId);
+    const reached = usrs.find((usr) => usr.id === userId);
+
+    // console.log(usrs);
+    // console.log(userId);
+    // console.log(reached);
 
     if (!reached) {
       throw new NotFoundException('User not found!');
@@ -314,5 +309,16 @@ export class UsersService {
 
   private async hashPasword(pass: string, salt: string): Promise<string> {
     return bcrypt.hash(pass, salt);
+  }
+
+  async getUsersByRightTag(tag: RightsTag) {
+    return this.userRepository.find({
+      where: {
+        rights: {
+          tag,
+        },
+        unit: { id: Not(IsNull()) },
+      },
+    });
   }
 }

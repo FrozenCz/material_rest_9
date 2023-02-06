@@ -60,15 +60,17 @@ export class HistoryService {
         history.asset = createHistory.asset;
         const userFrom: User = JSON.parse(createHistory.changedFrom).user;
         const userTo: User = JSON.parse(createHistory.changedTo).user;
+
+
         history.changedFrom = JSON.stringify({
-          userId: userFrom.id,
-          name: userFrom.name,
-          surname: userFrom.surname,
+          userId: userFrom?.id,
+          name: userFrom?.name,
+          surname: userFrom?.surname,
         });
         history.changedTo = JSON.stringify({
-          userId: userTo.id,
-          name: userTo.name,
-          surname: userTo.surname,
+          userId: userTo?.id,
+          name: userTo?.name,
+          surname: userTo?.surname,
         });
         break;
       case HistoryRelatedTo.assetsRemoved:

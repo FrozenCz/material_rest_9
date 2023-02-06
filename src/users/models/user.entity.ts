@@ -34,7 +34,7 @@ export class User extends BaseEntity {
   @Column({ select: false })
   salt: string;
 
-  @ManyToMany((type) => Rights, { cascade: true, eager: true })
+  @ManyToMany(() => Rights, { cascade: true, eager: true })
   @JoinTable({
     name: 'users_rights',
     joinColumn: { name: 'user_id', referencedColumnName: 'id' },

@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Rights } from './models/rights.entity';
 import { CreateRightsDto } from './dto/create-rights.dto';
-import { RightsList } from './config/rights.list';
+import { RightsList, RightsTag } from './config/rights.list';
 import { User } from './models/user.entity';
 import { Repository } from 'typeorm';
 
@@ -14,7 +14,7 @@ import { Repository } from 'typeorm';
 export class RightsService {
   constructor(
     @InjectRepository(Rights)
-    private rightsRepository: Repository<Rights>,
+    private rightsRepository: Repository<Rights>
   ) {}
 
   async getRights(): Promise<Rights[]> {
@@ -71,4 +71,6 @@ export class RightsService {
 
     return rights;
   }
+
+
 }
