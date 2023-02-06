@@ -8,9 +8,9 @@ export interface UserOutDto {
 }
 
 export interface SimpleUser {
+  id: number;
   name: string;
   surname: string;
-  username: string;
   unit_id: number;
   unit_name: string;
 }

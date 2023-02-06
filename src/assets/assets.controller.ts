@@ -7,10 +7,11 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Res, StreamableFile,
+  Res,
+  StreamableFile,
   UseGuards,
-  ValidationPipe
-} from "@nestjs/common";
+  ValidationPipe,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateAssetsDto } from './dto/create-assets.dto';
 import { GetUser } from '../users/utils/get-user.decorator';
@@ -28,10 +29,27 @@ import { AssetsModelDto } from './dto/out/assetModel.dto';
 import { Api } from '../api';
 import { AddImageToAssetDto } from './dto/add-image-to-asset.dto';
 import { Response } from 'express';
+import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
 
 @Controller('assets')
 export class AssetsController {
   constructor(private api: Api) {}
+
+  @Get('/transfers')
+  getTransferList(): any {
+    return 'hello world';
+  }
+
+  @Post('/transfers')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.createAssets)
+  createRequestForAssetTransfer(
+    @Body(ValidationPipe)
+      createRequestForAssetTransferDto: CreateRequestForAssetTransferDto,
+    @GetUser() user: User,
+  ): any {
+    console.log(createRequestForAssetTransferDto);
+  }
 
   @Get(':assetId/attachments/:attachment_id/:filename')
   async getAssetAttachment(
@@ -40,7 +58,7 @@ export class AssetsController {
   ): Promise<any> {
     const attachEnt = await this.api.getAssetAttachment(attachmentId);
 
-    res.writeHead(200, {'Content-Type': 'image/png'});
+    res.writeHead(200, { 'Content-Type': 'image/png' });
     res.end(attachEnt.binaryData);
   }
 
@@ -109,8 +127,6 @@ export class AssetsController {
     return this.api.getAssetsList();
   }
 
-
-
   @Patch('/changeAssetUserBulk')
   @UseGuards(AuthGuard(), RightsGuard)
   @RightsAllowed(RightsTag.changeAssetsUser)
@@ -144,4 +160,6 @@ export class AssetsController {
   ): Promise<any> {
     return this.api.removeAssets(removeAssetsDto, user);
   }
+
+
 }

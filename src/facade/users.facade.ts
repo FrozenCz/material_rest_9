@@ -182,9 +182,9 @@ export class UsersFacade {
       .then((users) =>
         users.map((user) => {
           return {
+            id: user.id,
             name: user.name,
             surname: user.surname,
-            username: user.username,
             unit_name: user.unit?.name,
             unit_id: user.unit?.id,
           };
