@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { RightsService } from 'src/users/rights.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
@@ -11,10 +11,11 @@ import { SetUserRightsDto } from 'src/users/dto/set-user-rights.dto';
 import { CreateRightsDto } from 'src/users/dto/create-rights.dto';
 import { AssetsService } from 'src/assets/assets.service';
 import { AuthCredentialsDto } from '../auth/dto/auth-credentials.dto';
-import { SimpleUser, UserOutDto } from '../users/dto/out/User.out.dto';
+import { Caretaker, UserOutDto } from '../users/dto/out/User.out.dto';
 import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 import { Transforms } from '../utils/transforms';
 import { RightsTag } from '../users/config/rights.list';
+import { RequestForAssetTransfer } from '../assets/models/asset.model';
 
 @Injectable()
 export class UsersFacade {
@@ -176,7 +177,7 @@ export class UsersFacade {
     return this.usersService.validateUser(authCredentialsDto);
   }
 
-  getCaretakers(): Promise<SimpleUser[]> {
+  getCaretakers(): Promise<Caretaker[]> {
     return this.usersService
       .getUsersByRightTag(RightsTag.createAssets)
       .then((users) =>
@@ -190,5 +191,40 @@ export class UsersFacade {
           };
         }),
       );
+  }
+
+  async createRequestForAssetTransfer(
+    requestForAssetTransfer: RequestForAssetTransfer,
+  ) {
+    const { caretakerFrom, caretakerTo } = await this.transformIdToCaretakers(
+      requestForAssetTransfer,
+    );
+    const assets = await this.assetsService.getAssets(
+      requestForAssetTransfer.assetIds,
+    );
+
+    return this.assetsService.createRequestForAssetTransfer({
+      message: requestForAssetTransfer.message,
+      assets,
+      caretakerFrom,
+      caretakerTo,
+    });
+  }
+
+  private async transformIdToCaretakers(requestForAssetTransfer: {
+    fromUser: number;
+    toUser: number;
+  }) {
+    const caretakers = await this.getCaretakers();
+    const caretakerFrom = caretakers.find(
+      (caretaker) => caretaker.id === requestForAssetTransfer.fromUser,
+    );
+    const caretakerTo = caretakers.find(
+      (caretaker) => caretaker.id === requestForAssetTransfer.toUser,
+    );
+    if (!caretakerFrom || !caretakerTo) {
+      throw new NotFoundException('Caretaker not found!');
+    }
+    return { caretakerFrom, caretakerTo };
   }
 }

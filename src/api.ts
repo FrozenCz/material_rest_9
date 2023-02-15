@@ -31,6 +31,9 @@ import {
   AssetAttachmentsEntity,
   AssetAttachmentType,
 } from './assets/models/assets-attachment.entity';
+import { AssetTransferQuery, RequestForAssetTransfer, TransferActionParams } from "./assets/models/asset.model";
+
+
 
 @Injectable()
 export class Api {
@@ -221,5 +224,25 @@ export class Api {
 
   getCaretakers() {
     return this.usersFacade.getCaretakers();
+  }
+
+  createRequestForAssetTransfer(
+    requestForAssetTransfer: RequestForAssetTransfer,
+  ) {
+    return this.usersFacade.createRequestForAssetTransfer(
+      requestForAssetTransfer,
+    );
+  }
+
+  assetTransferList(assetTransferQuery: AssetTransferQuery) {
+    return this.assetsFacade.getAssetTransferList(assetTransferQuery);
+  }
+
+  getAssetTransferDetail(uuid: string) {
+    return this.assetsFacade.getAssetTransferDetail(uuid);
+  }
+
+  transferAction(param: TransferActionParams) {
+    return this.assetsFacade.transferAction(param);
   }
 }

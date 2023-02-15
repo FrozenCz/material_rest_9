@@ -11,11 +11,12 @@ import { WsModule } from '../websocket/ws.module';
 import { Assets } from "./models/assets.entity";
 import { AssetNote } from "./models/assetNote.entity";
 import { AssetAttachmentsEntity } from "./models/assets-attachment.entity";
+import { AssetTransfersEntity } from "./models/asset-transfers.entity";
 
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Assets, AssetNote, AssetAttachmentsEntity]),
+    TypeOrmModule.forFeature([Assets, AssetNote, AssetAttachmentsEntity, AssetTransfersEntity]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     forwardRef(() => CategoriesModule),
     ProtocolsModule,

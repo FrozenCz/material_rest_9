@@ -7,7 +7,7 @@ export interface UserOutDto {
   reachable: boolean;
 }
 
-export interface SimpleUser {
+export interface Caretaker {
   id: number;
   name: string;
   surname: string;

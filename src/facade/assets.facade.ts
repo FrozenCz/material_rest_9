@@ -9,6 +9,7 @@ import { ChangeAssetInformationBulkDto } from '../assets/dto/change-asset-inform
 import { RemoveAssetsDto } from '../assets/dto/remove-assets.dto';
 import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 import { Transforms } from '../utils/transforms';
+import { AssetTransferQuery, TransferActionParams } from "../assets/models/asset.model";
 
 @Injectable()
 export class AssetsFacade {
@@ -106,6 +107,20 @@ export class AssetsFacade {
   }
 
   async getAssetDetail(assetId: number) {
-    return Transforms.assetToAssetDto(await this.assetsService.getAsset(assetId))
+    return Transforms.assetToAssetDto(
+      await this.assetsService.getAsset(assetId),
+    );
+  }
+
+  getAssetTransferList(assetTransferQuery: AssetTransferQuery) {
+    return this.assetsService.getAssetTransferList(assetTransferQuery);
+  }
+
+  getAssetTransferDetail(uuid: string) {
+    return this.assetsService.getAssetTransferDetail(uuid);
+  }
+
+  transferAction(param: TransferActionParams) {
+    return this.assetsService.transferAction(param);
   }
 }

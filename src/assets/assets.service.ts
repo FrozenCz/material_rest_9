@@ -16,7 +16,7 @@ import { UsersService } from '../users/users.service';
 import { UnitsService } from '../units/units.service';
 import { UpdateAssetsInformationDto } from './dto/update-assets-information.dto';
 import { ChangeUserBulkDto } from './dto/change-user-bulk.dto';
-import { Connection, EntityManager, Repository } from 'typeorm';
+import { Connection, DataSource, EntityManager, Repository } from 'typeorm';
 import { ChangeAssetInformationBulkDto } from './dto/change-asset-information-bulk.dto';
 import { RemoveAssetsDto } from './dto/remove-assets.dto';
 import { ProtocolsService } from '../protocols/protocols.service';
@@ -24,11 +24,17 @@ import { RemovingProtocol } from '../protocols/models/protocols.entity';
 
 import { HistoryService } from '../history/history.service';
 import { HistoryRelatedTo } from '../history/models/history.model';
-import { noop } from 'rxjs';
+import { async, noop } from 'rxjs';
 import { AssetNote } from './models/assetNote.entity';
 import { CreateAssetNote } from './models/assetNote.model';
 import { Location } from '../locations/models/location.entity';
 import { AssetAttachmentsEntity } from './models/assets-attachment.entity';
+import {
+  AssetTransferQuery,
+  ReqAssetTransferWithCaretakers,
+  TransferActionParams,
+} from './models/asset.model';
+import { AssetTransfersEntity } from './models/asset-transfers.entity';
 
 @Injectable()
 export class AssetsService {
@@ -37,6 +43,8 @@ export class AssetsService {
     private assetsRepository: Repository<Assets>,
     @InjectRepository(AssetAttachmentsEntity)
     private assetsAttachmentRepository: Repository<AssetAttachmentsEntity>,
+    @InjectRepository(AssetTransfersEntity)
+    private assetTransfersRepository: Repository<AssetTransfersEntity>,
     @Inject(forwardRef(() => CategoriesService))
     private categoriesService: CategoriesService,
     @Inject(forwardRef(() => UsersService))
@@ -45,6 +53,7 @@ export class AssetsService {
     private connection: Connection,
     private protocolService: ProtocolsService,
     private historyService: HistoryService,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -382,5 +391,130 @@ export class AssetsService {
         attachment_id: id,
       })
       .getOne();
+  }
+
+  async createRequestForAssetTransfer(
+    requestForAssetTransfer: ReqAssetTransferWithCaretakers,
+  ) {
+    const { assets, caretakerTo, caretakerFrom } = requestForAssetTransfer;
+    const assetTransfersEntity = new AssetTransfersEntity();
+    assetTransfersEntity.assets = assets;
+    assetTransfersEntity.caretakerFrom = caretakerFrom;
+    assetTransfersEntity.caretakerTo = caretakerTo;
+    assetTransfersEntity.message = requestForAssetTransfer.message;
+    return assetTransfersEntity.save();
+  }
+
+  async getAssetTransferList(assetTransferQuery: AssetTransferQuery) {
+    const { caretakerFrom } = assetTransferQuery;
+    const query = await this.assetTransfersRepository.createQueryBuilder(
+      'asset_transfers',
+    );
+    query.leftJoin('asset_transfers.assets', 'assets');
+    query.addSelect('assets.id');
+
+    if (caretakerFrom) {
+      query.where('asset_transfers.caretakerFrom @> :caretakerFrom', {
+        caretakerFrom: {
+          id: caretakerFrom,
+        },
+      });
+    }
+
+    return query.getMany();
+  }
+
+  async getAssetTransferDetail(uuid: string) {
+    const query = await this.assetTransfersRepository.createQueryBuilder(
+      'asset_transfers',
+    );
+    query.leftJoin('asset_transfers.assets', 'assets');
+    query.addSelect('assets.id');
+    query.where('asset_transfers.uuid = :uuid', { uuid });
+    return query.getOneOrFail();
+  }
+
+  async transferAction(param: TransferActionParams) {
+    const { uuid, user, action } = param;
+    const transfer = await this.getAssetTransferDetail(uuid);
+    const userTo = await this.usersService.getUserById(transfer.caretakerTo.id);
+    const userFrom = await this.usersService.getUserById(
+      transfer.caretakerFrom.id,
+    );
+
+    if (action === 'revert') {
+      return this.handleRevertAction({ transfer, user });
+    }
+
+    if (action === 'reject') {
+      return this.handleRejectAction({ transfer, user});
+    }
+
+    if (!this.isUnitMatch(userTo, transfer)) {
+      throw new BadRequestException('There is a problem with unit');
+    }
+
+    if (!this.isUserCaretakerTo(transfer, user)) {
+      throw new UnauthorizedException(
+        'You are not able to accept this transfer',
+      );
+    }
+
+    const assets = transfer.assets;
+    assets.forEach((asset) => {
+      asset.user = Promise.resolve(userTo);
+    });
+    transfer.acceptedAt = new Date();
+
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(assets);
+      await manager.save(transfer);
+    });
+
+    return;
+  }
+
+  private isUserCaretakerFrom(user: User, transfer: AssetTransfersEntity) {
+    return user.id === transfer.caretakerFrom.id && transfer.caretakerFrom.unit_id === user.unit.id;
+  }
+
+  private isUnitMatch(userTo: User, transfer: AssetTransfersEntity) {
+    return userTo.unit.id === transfer.caretakerTo.unit_id;
+  }
+
+  private isUserCaretakerTo(
+    transfer: AssetTransfersEntity,
+    user: User,
+  ): boolean {
+    return (
+      transfer.caretakerTo.id === user.id &&
+      transfer.caretakerTo.unit_id === user.unit.id
+    );
+  }
+
+  private async handleRevertAction(params: {
+    transfer: AssetTransfersEntity;
+    user: User
+  }) {
+    const { user, transfer } = params;
+    if (!this.isUserCaretakerFrom(user, transfer)) {
+      throw new UnauthorizedException('Not an owner of transfer!');
+    }
+
+    transfer.revertedAt = new Date();
+    return await transfer.save();
+  }
+
+  private async handleRejectAction(params: {
+    transfer: AssetTransfersEntity;
+    user: User
+  }) {
+    const { user, transfer } = params;
+    if (!this.isUserCaretakerTo(transfer, user)) {
+      throw new UnauthorizedException('Not an owner of transfer!');
+    }
+
+    transfer.rejectedAt = new Date();
+    return await transfer.save();
   }
 }

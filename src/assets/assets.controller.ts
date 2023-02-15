@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Res,
   StreamableFile,
   UseGuards,
@@ -30,25 +31,53 @@ import { Api } from '../api';
 import { AddImageToAssetDto } from './dto/add-image-to-asset.dto';
 import { Response } from 'express';
 import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
+import { AssetTransferQuery, TransferAction } from "./models/asset.model";
+
 
 @Controller('assets')
 export class AssetsController {
   constructor(private api: Api) {}
 
   @Get('/transfers')
-  getTransferList(): any {
-    return 'hello world';
+  getTransferList(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    )
+    assetTransferQuery: AssetTransferQuery,
+  ): any {
+    return this.api.assetTransferList(assetTransferQuery);
   }
+
+  @Get('/transfers/:uuid')
+  getTransferDetail(@Param('uuid') uuid: string): any {
+    return this.api.getAssetTransferDetail(uuid);
+  }
+
+  @Post('/transfers/:uuid/actions/:action')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.createAssets)
+  transferAction(
+    @Param('uuid') uuid: string,
+    @Param('action') action: TransferAction,
+    @GetUser() user: User,
+  ): any {
+    return this.api.transferAction({uuid, user, action});
+  }
+
 
   @Post('/transfers')
   @UseGuards(AuthGuard(), RightsGuard)
   @RightsAllowed(RightsTag.createAssets)
   createRequestForAssetTransfer(
     @Body(ValidationPipe)
-      createRequestForAssetTransferDto: CreateRequestForAssetTransferDto,
-    @GetUser() user: User,
+    createRequestForAssetTransferDto: CreateRequestForAssetTransferDto,
   ): any {
-    console.log(createRequestForAssetTransferDto);
+    return this.api.createRequestForAssetTransfer(
+      createRequestForAssetTransferDto,
+    );
   }
 
   @Get(':assetId/attachments/:attachment_id/:filename')
@@ -160,6 +189,4 @@ export class AssetsController {
   ): Promise<any> {
     return this.api.removeAssets(removeAssetsDto, user);
   }
-
-
 }
