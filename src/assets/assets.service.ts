@@ -397,8 +397,19 @@ export class AssetsService {
     requestForAssetTransfer: ReqAssetTransferWithCaretakers,
   ) {
     const { assets, caretakerTo, caretakerFrom } = requestForAssetTransfer;
-    const assetTransfersEntity = new AssetTransfersEntity();
 
+    await this.checkIfAnyAssetIsNotInActiveTransfer(assets);
+
+    const assetTransfersEntity = new AssetTransfersEntity();
+    assetTransfersEntity.assets = assets;
+    assetTransfersEntity.caretakerFrom = caretakerFrom;
+    assetTransfersEntity.caretakerTo = caretakerTo;
+    assetTransfersEntity.message = requestForAssetTransfer.message;
+
+    return assetTransfersEntity.save();
+  }
+
+  private async checkIfAnyAssetIsNotInActiveTransfer(assets: Assets[]) {
     for (let asset of assets) {
       if (await this.isInActiveTransfer(asset.id)) {
         throw new BadRequestException(
@@ -406,12 +417,6 @@ export class AssetsService {
         );
       }
     }
-
-    assetTransfersEntity.assets = assets;
-    assetTransfersEntity.caretakerFrom = caretakerFrom;
-    assetTransfersEntity.caretakerTo = caretakerTo;
-    assetTransfersEntity.message = requestForAssetTransfer.message;
-    return assetTransfersEntity.save();
   }
 
   async getAssetTransferList(assetTransferQuery: AssetTransferQuery) {
