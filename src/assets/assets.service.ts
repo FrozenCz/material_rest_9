@@ -398,6 +398,15 @@ export class AssetsService {
   ) {
     const { assets, caretakerTo, caretakerFrom } = requestForAssetTransfer;
     const assetTransfersEntity = new AssetTransfersEntity();
+
+    for (let asset of assets) {
+      if (await this.isInActiveTransfer(asset.id)) {
+        throw new BadRequestException(
+          `asset ${asset.id} is in active transfer!`,
+        );
+      }
+    }
+
     assetTransfersEntity.assets = assets;
     assetTransfersEntity.caretakerFrom = caretakerFrom;
     assetTransfersEntity.caretakerTo = caretakerTo;
@@ -406,7 +415,8 @@ export class AssetsService {
   }
 
   async getAssetTransferList(assetTransferQuery: AssetTransferQuery) {
-    const { caretakerFrom } = assetTransferQuery;
+    const { caretakerFrom, assetId, rejected, accepted, reverted } =
+      assetTransferQuery;
     const query = await this.assetTransfersRepository.createQueryBuilder(
       'asset_transfers',
     );
@@ -414,11 +424,39 @@ export class AssetsService {
     query.addSelect('assets.id');
 
     if (caretakerFrom) {
-      query.where('asset_transfers.caretakerFrom @> :caretakerFrom', {
+      query.andWhere('asset_transfers.caretakerFrom @> :caretakerFrom', {
         caretakerFrom: {
           id: caretakerFrom,
         },
       });
+    }
+
+    if (assetId) {
+      query.andWhere('assets.id = :assetId', { assetId });
+    }
+
+    if (rejected !== undefined) {
+      if (rejected) {
+        query.andWhere('asset_transfers.rejectedAt IS NOT NULL');
+      } else {
+        query.andWhere('asset_transfers.rejectedAt IS NULL');
+      }
+    }
+
+    if (accepted !== undefined) {
+      if (accepted) {
+        query.andWhere('asset_transfers.acceptedAt IS NOT NULL');
+      } else {
+        query.andWhere('asset_transfers.acceptedAt IS NULL');
+      }
+    }
+
+    if (reverted !== undefined) {
+      if (reverted) {
+        query.andWhere('asset_transfers.revertedAt IS NOT NULL');
+      } else {
+        query.andWhere('asset_transfers.revertedAt IS NULL');
+      }
     }
 
     return query.getMany();
@@ -447,7 +485,7 @@ export class AssetsService {
     }
 
     if (action === 'reject') {
-      return this.handleRejectAction({ transfer, user});
+      return this.handleRejectAction({ transfer, user });
     }
 
     if (!this.isUnitMatch(userTo, transfer)) {
@@ -463,6 +501,7 @@ export class AssetsService {
     const assets = transfer.assets;
     assets.forEach((asset) => {
       asset.user = Promise.resolve(userTo);
+      throw new BadRequestException('Asset is in active transfer!');
     });
     transfer.acceptedAt = new Date();
 
@@ -474,8 +513,21 @@ export class AssetsService {
     return;
   }
 
+  private async isInActiveTransfer(assetId: number): Promise<boolean> {
+    const foundActive = await this.getAssetTransferList({
+      assetId,
+      rejected: false,
+      reverted: false,
+      accepted: false,
+    });
+    return foundActive.length > 0;
+  }
+
   private isUserCaretakerFrom(user: User, transfer: AssetTransfersEntity) {
-    return user.id === transfer.caretakerFrom.id && transfer.caretakerFrom.unit_id === user.unit.id;
+    return (
+      user.id === transfer.caretakerFrom.id &&
+      transfer.caretakerFrom.unit_id === user.unit.id
+    );
   }
 
   private isUnitMatch(userTo: User, transfer: AssetTransfersEntity) {
@@ -494,7 +546,7 @@ export class AssetsService {
 
   private async handleRevertAction(params: {
     transfer: AssetTransfersEntity;
-    user: User
+    user: User;
   }) {
     const { user, transfer } = params;
     if (!this.isUserCaretakerFrom(user, transfer)) {
@@ -507,7 +559,7 @@ export class AssetsService {
 
   private async handleRejectAction(params: {
     transfer: AssetTransfersEntity;
-    user: User
+    user: User;
   }) {
     const { user, transfer } = params;
     if (!this.isUserCaretakerTo(transfer, user)) {
