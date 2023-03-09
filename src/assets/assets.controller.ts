@@ -31,8 +31,8 @@ import { Api } from '../api';
 import { AddImageToAssetDto } from './dto/add-image-to-asset.dto';
 import { Response } from 'express';
 import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
-import { AssetTransferQuery, TransferAction } from "./models/asset.model";
-
+import { AssetTransferQuery, TransferAction } from './models/asset.model';
+import { Barcode } from './models/barcode.model';
 
 @Controller('assets')
 export class AssetsController {
@@ -64,9 +64,8 @@ export class AssetsController {
     @Param('action') action: TransferAction,
     @GetUser() user: User,
   ): any {
-    return this.api.transferAction({uuid, user, action});
+    return this.api.transferAction({ uuid, user, action });
   }
-
 
   @Post('/transfers')
   @UseGuards(AuthGuard(), RightsGuard)
@@ -78,6 +77,21 @@ export class AssetsController {
     return this.api.createRequestForAssetTransfer(
       createRequestForAssetTransferDto,
     );
+  }
+
+  @Get('/barcodes')
+  getBarcodes(): Promise<Barcode[]> {
+    return this.api.getBarcodes().then((assets) => {
+      return Promise.all(
+        assets.map(async (asset) => {
+          return {
+            ...asset,
+            found: false,
+            location: await asset.location,
+          };
+        }),
+      );
+    });
   }
 
   @Get(':assetId/attachments/:attachment_id/:filename')

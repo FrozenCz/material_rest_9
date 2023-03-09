@@ -10,10 +10,11 @@ import { RemoveAssetsDto } from '../assets/dto/remove-assets.dto';
 import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 import { Transforms } from '../utils/transforms';
 import { AssetTransferQuery, TransferActionParams } from "../assets/models/asset.model";
+import { LocationsService } from "../locations/locations.service";
 
 @Injectable()
 export class AssetsFacade {
-  constructor(private assetsService: AssetsService, private ws: WsGateway) {}
+  constructor(private assetsService: AssetsService, private ws: WsGateway, private locationService: LocationsService) {}
 
   createAssets(createAssetsDto: CreateAssetsDto, user: User): Promise<void> {
     return this.assetsService
@@ -122,5 +123,9 @@ export class AssetsFacade {
 
   transferAction(param: TransferActionParams) {
     return this.assetsService.transferAction(param);
+  }
+
+  async getBarcodes() {
+   return this.assetsService.getAssetsList();
   }
 }

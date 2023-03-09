@@ -245,4 +245,8 @@ export class Api {
   transferAction(param: TransferActionParams) {
     return this.assetsFacade.transferAction(param);
   }
+
+  getBarcodes() {
+    return this.assetsFacade.getBarcodes();
+  }
 }
