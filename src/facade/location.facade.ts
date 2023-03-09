@@ -27,7 +27,7 @@ export class LocationFacade {
     return this.locationService.updateLocation(updateLocation, user);
   }
 
-  safeNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
-    return this.locationService.safeNfcId(locationUuid, saveNfcId, user);
+  safeNfcId(locationUuid: string, saveNfcId: SaveNfcDTO) {
+    return this.locationService.safeNfcId(locationUuid, saveNfcId);
   }
 }

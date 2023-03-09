@@ -188,8 +188,8 @@ export class Api {
     return this.locationFacade.updateLocation(updateLocation, user);
   }
 
-  saveNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
-    return this.locationFacade.safeNfcId(locationUuid, saveNfcId, user);
+  saveNfcId(locationUuid: string, saveNfcId: SaveNfcDTO) {
+    return this.locationFacade.safeNfcId(locationUuid, saveNfcId);
   }
 
   async addImageToAsset(

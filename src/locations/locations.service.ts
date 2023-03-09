@@ -119,7 +119,7 @@ export class LocationsService {
     return location.save();
   }
 
-  async safeNfcId(locationUuid: string, saveNfcId: SaveNfcDTO, user: User) {
+  async safeNfcId(locationUuid: string, saveNfcId: SaveNfcDTO) {
     const location = await Location.findOneOrFail({
       where: { uuid: locationUuid },
     });
