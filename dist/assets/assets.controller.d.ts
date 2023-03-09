@@ -1,0 +1,35 @@
+import { CreateAssetsDto } from './dto/create-assets.dto';
+import { User } from '../users/models/user.entity';
+import { Assets } from './models/assets.entity';
+import { UpdateAssetsInformationDto } from './dto/update-assets-information.dto';
+import { ChangeUserBulkDto } from './dto/change-user-bulk.dto';
+import { ChangeAssetInformationBulkDto } from './dto/change-asset-information-bulk.dto';
+import { RemoveAssetsDto } from './dto/remove-assets.dto';
+import { CreateAssetNoteDto } from './dto/create-asset-note.dto';
+import { AssetsModelDto } from './dto/out/assetModel.dto';
+import { Api } from '../api';
+import { AddImageToAssetDto } from './dto/add-image-to-asset.dto';
+import { Response } from 'express';
+import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
+import { AssetTransferQuery, TransferAction } from './models/asset.model';
+import { Barcode } from './models/barcode.model';
+export declare class AssetsController {
+    private api;
+    constructor(api: Api);
+    getTransferList(assetTransferQuery: AssetTransferQuery): any;
+    getTransferDetail(uuid: string): any;
+    transferAction(uuid: string, action: TransferAction, user: User): any;
+    createRequestForAssetTransfer(createRequestForAssetTransferDto: CreateRequestForAssetTransferDto): any;
+    getBarcodes(): Promise<Barcode[]>;
+    getAssetAttachment(attachmentId: string, res: Response): Promise<any>;
+    createAssets(createAssetsDto: CreateAssetsDto, user: User): Promise<any>;
+    addNote(assetId: number, createAssetNoteDto: CreateAssetNoteDto, user: User): Promise<any>;
+    changeUser(userId: number, assetId: number, user: User): Promise<Assets>;
+    updateInformation(updateAssetsDto: UpdateAssetsInformationDto, assetId: number, user: User): Promise<Assets>;
+    addImageToAsset(addImageToAssetDto: AddImageToAssetDto, assetId: number, user: User): Promise<void>;
+    getAssetDetail(assetId: number): Promise<AssetsModelDto>;
+    getAssetsList(): Promise<AssetsModelDto[]>;
+    changeUserBulk(changeUserBulkDto: ChangeUserBulkDto[], user: User): Promise<Assets[]>;
+    changeAssetInformationBulk(changeAssetInformationBulkDto: ChangeAssetInformationBulkDto[], user: User): Promise<Assets[]>;
+    removeAssets(removeAssetsDto: RemoveAssetsDto, user: User): Promise<any>;
+}
