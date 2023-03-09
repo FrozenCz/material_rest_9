@@ -47,8 +47,8 @@ services:
       dockerfile: ./Dockerfile
     command: npm run start:debug
     ports:
-      - 3000:3000
-      - 9229:9229
+      - 3040:3000
+      - 9249:9229
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -68,8 +68,8 @@ services:
       dockerfile: ./Dockerfile
     command: npm run start:prod
     ports:
-      - 3000:3000
-      - 9229:9229
+      - 3040:3000
+      - 9249:9229
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
