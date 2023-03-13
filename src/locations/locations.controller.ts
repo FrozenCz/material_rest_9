@@ -56,7 +56,10 @@ export class LocationsController {
   }
 
   @Patch('/:uuid/nfc')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.createLocation)
   saveNfcId(
+    @GetUser() user: User,
     @Body(ValidationPipe) saveNfcId: SaveNfcDTO,
     @Param('uuid') locationUuid: string,
   ): Promise<Location> {

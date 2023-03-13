@@ -37,11 +37,11 @@ export class ListEntity extends BaseEntity {
     @UpdateDateColumn({type: 'timestamp without time zone'})
     updated: Date;
 
-    @ManyToMany(type => Assets, object => object.user,{onDelete: 'CASCADE'})
+    @ManyToMany(type => Assets, object => object.id,{onDelete: 'CASCADE'})
     @JoinTable({
         name: 'assets_for_list',
-        joinColumns: [{ name: 'userId' }],
-        inverseJoinColumns: [{ name: 'assetId' }],
+        joinColumns: [{ name: 'listId', referencedColumnName: 'id' }],
+        inverseJoinColumns: [{ name: 'assetId', referencedColumnName: 'id' }],
     })
     assets: Assets[]
 

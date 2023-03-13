@@ -17,6 +17,7 @@ export class CreateListDto {
     @MaxLength(200)
     name: string;
 
+
     @IsOptional()
     @IsString()
     @MaxLength(200)
