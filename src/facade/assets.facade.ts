@@ -13,13 +13,18 @@ import { AssetTransferQuery, TransferActionParams } from "../assets/models/asset
 import { LocationsService } from "../locations/locations.service";
 import { StockTakingService } from "../assets/stock-taking.service";
 import { UsersService } from "../users/users.service";
+import { StockTakingEntity } from "../assets/models/stock-taking.entity";
+import { Assets } from "../assets/models/assets.entity";
 
 @Injectable()
 export class AssetsFacade {
   constructor(
     private usersService: UsersService,
     private stockTakingService: StockTakingService,
-    private assetsService: AssetsService, private ws: WsGateway, private locationService: LocationsService) {}
+    private assetsService: AssetsService,
+    private ws: WsGateway,
+    private locationService: LocationsService,
+  ) {}
 
   createAssets(createAssetsDto: CreateAssetsDto, user: User): Promise<void> {
     return this.assetsService
@@ -131,55 +136,69 @@ export class AssetsFacade {
   }
 
   async getBarcodes() {
-   return this.assetsService.getAssetsList();
+    return this.assetsService.getAssetsList();
   }
 
   getStockTakings() {
     return this.stockTakingService.getStockTaking();
   }
 
-  async createStockTaking(param: {name: string; solverId: number; user: User}) {
-    const {user} = param;
+  async createStockTaking(param: {
+    name: string;
+    solverId: number;
+    user: User;
+  }) {
+    const { user } = param;
 
     const usersIds = await this.getUsersIds(user);
     const assets = await this.getAssetsByUsersIds(usersIds);
 
     return this.stockTakingService.createStockTaking({ ...param, assets });
-
   }
 
   private async getUsersIds(user: User) {
-    return (await this.usersService.getReachableUsers(user)).map(user => user.id);
+    return (await this.usersService.getReachableUsers(user)).map(
+      (user) => user.id,
+    );
   }
 
   private async getAssetsByUsersIds(usersIds: number[]) {
-    return await this.assetsService.getAssetsList().then(assets => {
-      return assets.filter(asset => usersIds.includes(asset.user_id));
+    return await this.assetsService.getAssetsList().then((assets) => {
+      return assets.filter((asset) => usersIds.includes(asset.user_id));
     });
   }
 
   async getStockTakingInProgress(user: User) {
     const stockTakings = await this.getStockTakings();
     const assetsMap = await this.assetsService.getAssetsMap$();
-    return await Promise.all(stockTakings.map(async stockTaking => {
-      return {
-        ...stockTaking,
-        items: await Promise.all(stockTaking.items.map(async item => {
-          const found = assetsMap.get(item.assetId);
-          if (!found) {
-            throw new NotFoundException('Asset not found');
-          }
-          return {
-            ...item,
-            id: item.assetId,
-            name: found.name,
-            serialNumber: found.serialNumber,
-            location: await found.location
-          }
-        }))
-      }
-    }));
+    return await Promise.all(
+      stockTakings.map(async (stockTaking) => {
+        return {
+          ...stockTaking,
+          items: await this.getItems(stockTaking, assetsMap),
+        };
+      }),
+    );
+  }
 
-
+  private async getItems(
+    stockTaking: StockTakingEntity,
+    assetsMap: Map<number, Assets>,
+  ) {
+    return await Promise.all(
+      stockTaking.items.map(async (item) => {
+        const found = assetsMap.get(item.assetId);
+        if (!found) {
+          throw new NotFoundException('Asset not found');
+        }
+        return {
+          ...item,
+          id: item.assetId,
+          name: found.name,
+          serialNumber: found.serialNumber,
+          location: await found.location,
+        };
+      }),
+    );
   }
 }
