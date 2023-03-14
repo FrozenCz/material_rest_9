@@ -4,7 +4,7 @@ services:
   postgres:
     container_name: evNest_9
     image: postgres:alpine
-    restart: always
+    restart: unless-stopped
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -48,7 +48,7 @@ services:
     command: npm run start:debug
     ports:
       - 3000:3000
-      - 9249:9229
+      - 9249:9249
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
@@ -69,7 +69,7 @@ services:
     command: npm run start:prod
     ports:
       - 3040:3000
-      - 9249:9229
+      - 9229:9229
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
