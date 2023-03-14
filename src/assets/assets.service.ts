@@ -24,7 +24,7 @@ import { RemovingProtocol } from '../protocols/models/protocols.entity';
 
 import { HistoryService } from '../history/history.service';
 import { HistoryRelatedTo } from '../history/models/history.model';
-import { async, noop } from 'rxjs';
+import { async, noop, Observable } from "rxjs";
 import { AssetNote } from './models/assetNote.entity';
 import { CreateAssetNote } from './models/assetNote.model';
 import { Location } from '../locations/models/location.entity';
@@ -37,6 +37,8 @@ import {
 import { AssetTransfersEntity } from './models/asset-transfers.entity';
 import { StockTakingEntity } from "./models/stock-taking.entity";
 import { StockTakingItemEntity } from "./models/stock-taking-item.entity";
+import * as Util from "util";
+import { UtilFuncs } from "../utils/utilFuncs";
 
 @Injectable()
 export class AssetsService {
@@ -578,4 +580,10 @@ export class AssetsService {
   }
 
 
+  async getAssetsMap$(): Promise<Map<number, Assets>> {
+    return this.getAssetsList().then(assets => UtilFuncs.createMap<number, Assets>({
+      array: assets,
+      propertyName: 'id'
+    }))
+  }
 }

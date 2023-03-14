@@ -33,7 +33,8 @@ import { Response } from 'express';
 import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
 import { AssetTransferQuery, TransferAction } from './models/asset.model';
 import { Barcode } from './models/barcode.model';
-import { CreateStockTakingDTO } from "./dto/stock-taking.dto";
+import { CreateStockTakingDTO, StockTakingInProgressDTO } from "./dto/stock-taking.dto";
+import { StockTakingEntity } from "./models/stock-taking.entity";
 
 @Controller('assets')
 export class AssetsController {
@@ -106,8 +107,17 @@ export class AssetsController {
   }
 
   @Get('/stock-taking')
-  getStockTaking(): Promise<any> {
+  getStockTaking(): Promise<StockTakingEntity[]> {
     return this.api.getStockTaking();
+  }
+
+  @Get('/stock-taking-in-progress')
+  @UseGuards(AuthGuard())
+  getStockTakingInProgress(
+    @GetUser() user: User
+  ):
+    Promise<StockTakingInProgressDTO[]> {
+    return this.api.getStockTakingInProgress(user);
   }
 
   @Get(':assetId/attachments/:attachment_id/:filename')

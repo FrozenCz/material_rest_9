@@ -251,10 +251,14 @@ export class Api {
   }
 
   getStockTaking() {
-    return this.assetsFacade.getStockTaking();
+    return this.assetsFacade.getStockTakings();
   }
 
   createStockTaking(param: {name: string; solverId: number; user: User}) {
     return this.assetsFacade.createStockTaking(param);
+  }
+
+  getStockTakingInProgress(user: User) {
+    return this.assetsFacade.getStockTakingInProgress(user)
   }
 }

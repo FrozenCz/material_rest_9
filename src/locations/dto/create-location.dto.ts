@@ -5,9 +5,8 @@ export class CreateLocationDto {
   @IsNotEmpty()
   name: string;
 
-  @IsOptional()
-  @IsNotEmpty()
   @IsString()
+  @IsOptional()
   parent: string;
 }
 

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { AssetsService } from '../assets/assets.service';
 import { CreateAssetsDto } from '../assets/dto/create-assets.dto';
 import { User } from '../users/models/user.entity';
@@ -134,7 +134,7 @@ export class AssetsFacade {
    return this.assetsService.getAssetsList();
   }
 
-  getStockTaking() {
+  getStockTakings() {
     return this.stockTakingService.getStockTaking();
   }
 
@@ -156,5 +156,30 @@ export class AssetsFacade {
     return await this.assetsService.getAssetsList().then(assets => {
       return assets.filter(asset => usersIds.includes(asset.user_id));
     });
+  }
+
+  async getStockTakingInProgress(user: User) {
+    const stockTakings = await this.getStockTakings();
+    const assetsMap = await this.assetsService.getAssetsMap$();
+    return await Promise.all(stockTakings.map(async stockTaking => {
+      return {
+        ...stockTaking,
+        items: await Promise.all(stockTaking.items.map(async item => {
+          const found = assetsMap.get(item.assetId);
+          if (!found) {
+            throw new NotFoundException('Asset not found');
+          }
+          return {
+            ...item,
+            id: item.assetId,
+            name: found.name,
+            serialNumber: found.serialNumber,
+            location: await found.location
+          }
+        }))
+      }
+    }));
+
+
   }
 }
