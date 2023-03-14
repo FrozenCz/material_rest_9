@@ -169,7 +169,7 @@ export class AssetsFacade {
   }
 
   async getStockTakingInProgress(user: User) {
-    const stockTakings = await this.getStockTakings();
+    const stockTakings = await this.getStockTakingsByUser(user);
     const assetsMap = await this.assetsService.getAssetsMap$();
     return await Promise.all(
       stockTakings.map(async (stockTaking) => {
@@ -178,6 +178,12 @@ export class AssetsFacade {
           items: await this.getItems(stockTaking, assetsMap),
         };
       }),
+    );
+  }
+
+  private async getStockTakingsByUser(user: User) {
+    return await this.getStockTakings().then((stockTakings) =>
+      stockTakings.filter((stockTaking) => stockTaking.solverId === user.id),
     );
   }
 
