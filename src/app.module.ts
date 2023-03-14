@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
@@ -81,6 +80,6 @@ const facades = [UsersFacade, AssetsFacade, LocationFacade];
     WsModule,
   ],
   controllers: [...controllers],
-  providers: [AppService, Api, ...facades, ...subscribers],
+  providers: [Api, ...facades, ...subscribers],
 })
 export class AppModule {}
