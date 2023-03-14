@@ -249,4 +249,12 @@ export class Api {
   getBarcodes() {
     return this.assetsFacade.getBarcodes();
   }
+
+  getStockTaking() {
+    return this.assetsFacade.getStockTaking();
+  }
+
+  createStockTaking(param: {name: string; solverId: number; user: User}) {
+    return this.assetsFacade.createStockTaking(param);
+  }
 }

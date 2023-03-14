@@ -35,6 +35,8 @@ import {
   TransferActionParams,
 } from './models/asset.model';
 import { AssetTransfersEntity } from './models/asset-transfers.entity';
+import { StockTakingEntity } from "./models/stock-taking.entity";
+import { StockTakingItemEntity } from "./models/stock-taking-item.entity";
 
 @Injectable()
 export class AssetsService {
@@ -574,4 +576,6 @@ export class AssetsService {
     transfer.rejectedAt = new Date();
     return await transfer.save();
   }
+
+
 }

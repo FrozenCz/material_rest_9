@@ -33,6 +33,7 @@ import { Response } from 'express';
 import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
 import { AssetTransferQuery, TransferAction } from './models/asset.model';
 import { Barcode } from './models/barcode.model';
+import { CreateStockTakingDTO } from "./dto/stock-taking.dto";
 
 @Controller('assets')
 export class AssetsController {
@@ -92,6 +93,21 @@ export class AssetsController {
         }),
       );
     });
+  }
+
+  @Post('/stock-taking')
+  @UseGuards(AuthGuard(), RightsGuard)
+  @RightsAllowed(RightsTag.createAssets)
+  createStockTaking(
+    @GetUser() user: User,
+    @Body(ValidationPipe) createStockTaking: CreateStockTakingDTO
+  ): Promise<any> {
+    return this.api.createStockTaking({user, name: createStockTaking.name, solverId: createStockTaking.solverId});
+  }
+
+  @Get('/stock-taking')
+  getStockTaking(): Promise<any> {
+    return this.api.getStockTaking();
   }
 
   @Get(':assetId/attachments/:attachment_id/:filename')

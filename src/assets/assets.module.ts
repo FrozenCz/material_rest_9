@@ -12,6 +12,7 @@ import { Assets } from "./models/assets.entity";
 import { AssetNote } from "./models/assetNote.entity";
 import { AssetAttachmentsEntity } from "./models/assets-attachment.entity";
 import { AssetTransfersEntity } from "./models/asset-transfers.entity";
+import { StockTakingService } from "./stock-taking.service";
 
 
 @Module({
@@ -26,7 +27,7 @@ import { AssetTransfersEntity } from "./models/asset-transfers.entity";
     WsModule,
   ],
   controllers: [],
-  providers: [AssetsService],
-  exports: [AssetsService],
+  providers: [AssetsService, StockTakingService],
+  exports: [AssetsService, StockTakingService],
 })
 export class AssetsModule {}

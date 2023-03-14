@@ -11,10 +11,15 @@ import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 import { Transforms } from '../utils/transforms';
 import { AssetTransferQuery, TransferActionParams } from "../assets/models/asset.model";
 import { LocationsService } from "../locations/locations.service";
+import { StockTakingService } from "../assets/stock-taking.service";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class AssetsFacade {
-  constructor(private assetsService: AssetsService, private ws: WsGateway, private locationService: LocationsService) {}
+  constructor(
+    private usersService: UsersService,
+    private stockTakingService: StockTakingService,
+    private assetsService: AssetsService, private ws: WsGateway, private locationService: LocationsService) {}
 
   createAssets(createAssetsDto: CreateAssetsDto, user: User): Promise<void> {
     return this.assetsService
@@ -127,5 +132,29 @@ export class AssetsFacade {
 
   async getBarcodes() {
    return this.assetsService.getAssetsList();
+  }
+
+  getStockTaking() {
+    return this.stockTakingService.getStockTaking();
+  }
+
+  async createStockTaking(param: {name: string; solverId: number; user: User}) {
+    const {user} = param;
+
+    const usersIds = await this.getUsersIds(user);
+    const assets = await this.getAssetsByUsersIds(usersIds);
+
+    return this.stockTakingService.createStockTaking({ ...param, assets });
+
+  }
+
+  private async getUsersIds(user: User) {
+    return (await this.usersService.getReachableUsers(user)).map(user => user.id);
+  }
+
+  private async getAssetsByUsersIds(usersIds: number[]) {
+    return await this.assetsService.getAssetsList().then(assets => {
+      return assets.filter(asset => usersIds.includes(asset.user_id));
+    });
   }
 }
