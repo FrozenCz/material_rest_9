@@ -3,28 +3,10 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { json, urlencoded } from 'express';
-import * as fs from 'fs';
 
 async function bootstrap() {
-  let sslConfig = {};
 
-
-    sslConfig = {
-      httpOptions: {
-        key: fs.readFileSync(
-          'privkey.pem',
-        ),
-        cert: fs.readFileSync(
-          'fullchain.pem',
-        ),
-      },
-    };
-
-
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    sslConfig,
-  );
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const options = new DocumentBuilder()
     .setTitle('BP - backend')
