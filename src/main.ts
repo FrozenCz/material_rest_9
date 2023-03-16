@@ -6,7 +6,12 @@ import { json, urlencoded } from 'express';
 
 async function bootstrap() {
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    httpsOptions: {
+      cert: 'fullchain.pem',
+      key: 'privkey.pem'
+    }
+  });
 
   const options = new DocumentBuilder()
     .setTitle('BP - backend')
