@@ -8,7 +8,7 @@ import * as fs from 'fs';
 async function bootstrap() {
   let sslConfig = {};
 
-  if (process.env.ssl) {
+
     sslConfig = {
       httpOptions: {
         key: fs.readFileSync(
@@ -19,7 +19,7 @@ async function bootstrap() {
         ),
       },
     };
-  }
+
 
   const app = await NestFactory.create<NestExpressApplication>(
     AppModule,
