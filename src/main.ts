@@ -12,10 +12,10 @@ async function bootstrap() {
     sslConfig = {
       httpOptions: {
         key: fs.readFileSync(
-          '/etc/letsencrypt/live/dp-rest.milanknop.cz/privkey.pem',
+          'privkey.pem',
         ),
         cert: fs.readFileSync(
-          '/etc/letsencrypt/live/dp-rest.milanknop.cz/fullchain.pem',
+          'fullchain.pem',
         ),
       },
     };

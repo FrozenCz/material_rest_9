@@ -8,6 +8,8 @@ RUN npm install glob rimraf
 RUN npm install --only=development
 
 COPY . .
+COPY privkey.pem /etc/letsencrypt/live/dp-rest.milanknop.cz/privkey.pem
+COPY fullchain.pem /etc/letsencrypt/live/dp-rest.milanknop.cz/fullchain.pem
 
 RUN npm run build
 
