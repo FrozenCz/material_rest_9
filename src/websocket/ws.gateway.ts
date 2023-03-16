@@ -86,7 +86,7 @@ export class WsGateway
   logger: Logger = new Logger('Gateway');
 
   @WebSocketServer()
-  server: Server;
+  server: Server = new Server({destroyUpgrade: false})
 
   wsChanges$: BehaviorSubject<WsType> = new BehaviorSubject<WsType>(undefined);
 
