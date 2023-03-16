@@ -8,8 +8,8 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     httpsOptions: {
-      cert: 'fullchain.pem',
-      key: 'privkey.pem'
+      cert: '/etc/ssl/certs/fullchain.pem',
+      key: '/etc/ssl/private/privkey.pem'
     }
   });
 
