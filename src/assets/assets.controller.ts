@@ -33,8 +33,9 @@ import { Response } from 'express';
 import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
 import { AssetTransferQuery, TransferAction } from './models/asset.model';
 import { Barcode } from './models/barcode.model';
-import { CreateStockTakingDTO, StockTakingInProgressDTO } from "./dto/stock-taking.dto";
+import { CreateStockTakingDTO, PatchStockTakingsDTO, StockTakingInProgressDTO } from "./dto/stock-taking.dto";
 import { StockTakingEntity } from "./models/stock-taking.entity";
+import { BarcodesChangesDTO } from "./dto/barcodes.dto";
 
 @Controller('assets')
 export class AssetsController {
@@ -96,6 +97,13 @@ export class AssetsController {
     });
   }
 
+  @Post('barcodes/changes')
+  barcodesChanges(
+    @Body(ValidationPipe) saveChangesDTO: BarcodesChangesDTO,
+  ): Promise<void> {
+    return this.api.saveChangesBarcodes({...saveChangesDTO});
+  }
+
   @Post('/stock-taking')
   @UseGuards(AuthGuard(), RightsGuard)
   @RightsAllowed(RightsTag.createAssets)
@@ -119,6 +127,17 @@ export class AssetsController {
     Promise<StockTakingInProgressDTO[]> {
     return this.api.getStockTakingInProgress(user);
   }
+
+  @Patch('/stock-taking-in-progress')
+  @UseGuards(AuthGuard())
+  patchStockTakingInProgress(
+    @GetUser() user: User,
+    @Body(ValidationPipe) patchStockTakingDTO: PatchStockTakingsDTO
+  ):
+    Promise<any> {
+    return this.api.patchStockTakingInProgress({...patchStockTakingDTO, user});
+  }
+
 
   @Get(':assetId/attachments/:attachment_id/:filename')
   async getAssetAttachment(

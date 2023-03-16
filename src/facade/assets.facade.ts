@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { AssetsService } from '../assets/assets.service';
 import { CreateAssetsDto } from '../assets/dto/create-assets.dto';
 import { User } from '../users/models/user.entity';
@@ -9,12 +9,23 @@ import { ChangeAssetInformationBulkDto } from '../assets/dto/change-asset-inform
 import { RemoveAssetsDto } from '../assets/dto/remove-assets.dto';
 import { SubscribeMessageEnum, WsGateway } from '../websocket/ws.gateway';
 import { Transforms } from '../utils/transforms';
-import { AssetTransferQuery, TransferActionParams } from "../assets/models/asset.model";
-import { LocationsService } from "../locations/locations.service";
-import { StockTakingService } from "../assets/stock-taking.service";
-import { UsersService } from "../users/users.service";
-import { StockTakingEntity } from "../assets/models/stock-taking.entity";
-import { Assets } from "../assets/models/assets.entity";
+import {
+  AssetTransferQuery,
+  TransferActionParams,
+} from '../assets/models/asset.model';
+import { LocationsService } from '../locations/locations.service';
+import { StockTakingService } from '../assets/stock-taking.service';
+import { UsersService } from '../users/users.service';
+import { StockTakingEntity } from '../assets/models/stock-taking.entity';
+import { Assets } from '../assets/models/assets.entity';
+import { AssetChangeDTO } from '../assets/dto/barcodes.dto';
+import { Location } from '../locations/models/location.entity';
+import {
+  PatchStockTakingDTO,
+  PatchStockTakingItem,
+} from '../assets/dto/stock-taking.dto';
+import { StockTakingItemEntity } from '../assets/models/stock-taking-item.entity';
+import { UtilFuncs } from '../utils/utilFuncs';
 
 @Injectable()
 export class AssetsFacade {
@@ -140,7 +151,7 @@ export class AssetsFacade {
   }
 
   getStockTakings() {
-    return this.stockTakingService.getStockTaking();
+    return this.stockTakingService.getStockTakings();
   }
 
   async createStockTaking(param: {
@@ -206,5 +217,105 @@ export class AssetsFacade {
         };
       }),
     );
+  }
+
+  async saveChangesBarcodes(param: { assets: AssetChangeDTO[] }) {
+    const { assets } = param;
+
+    const onlyWithLocations = assets.filter((a) => a.locationConfirmedUuid);
+
+    const withLocation: Assets[] = await Promise.all(
+      onlyWithLocations.map(async (asset) => {
+        const assetEntity = await Assets.findOneOrFail({
+          where: { id: asset.id },
+        });
+        const location = await Location.findOneOrFail({
+          where: { uuid: asset.locationConfirmedUuid },
+        });
+        assetEntity.location = Promise.resolve(location);
+        return assetEntity;
+      }),
+    );
+    await Assets.save(withLocation);
+    return;
+  }
+
+  async patchStockTakingInProgress(param: {
+    stockTakings: PatchStockTakingDTO[];
+    user: User;
+  }) {
+    const { user, stockTakings } = param;
+    const stockTakingEntities =
+      await this.stockTakingService.getStockTakingsByUuids(
+        this.getUuids(stockTakings),
+      );
+    const stockTakingsForSolver = this.getUnclosedStockTakingsForSolver({
+      stockTakingEntities,
+      user,
+    });
+    const resultsMap: Map<string, PatchStockTakingItem[]> =
+      this.getStockTakingItemMapByStockTakingUuid(stockTakings);
+    const assetsMap = await this.assetsService.getAssetsMap$();
+
+    stockTakingsForSolver.forEach((stockTaking) =>
+      this.updateStockTakingItems({
+        stockTakingItems: stockTaking.items,
+        result: resultsMap.get(stockTaking.uuid) ?? [],
+        assetsMap,
+      }),
+    );
+    return StockTakingEntity.save(stockTakingsForSolver);
+  }
+
+  private getUnclosedStockTakingsForSolver(param: {
+    stockTakingEntities: StockTakingEntity[];
+    user: User;
+  }) {
+    const { user, stockTakingEntities } = param;
+    return stockTakingEntities.filter(
+      (s) => s.solverId === user.id && !s.closedAt,
+    );
+  }
+
+  private getUuids(stockTakings: PatchStockTakingDTO[]) {
+    return stockTakings.map((stock) => stock.uuid);
+  }
+
+  private getStockTakingItemMapByStockTakingUuid(
+    stockTakings: PatchStockTakingDTO[],
+  ): Map<string, PatchStockTakingItem[]> {
+    const map: Map<string, PatchStockTakingItem[]> = new Map();
+    stockTakings.forEach((stockTaking) =>
+      map.set(stockTaking.uuid, stockTaking.items),
+    );
+    return map;
+  }
+
+  private updateStockTakingItems(param: {
+    result: PatchStockTakingItem[];
+    stockTakingItems: StockTakingItemEntity[];
+    assetsMap: Map<number, Assets>;
+  }): StockTakingItemEntity[] {
+    const { result, stockTakingItems, assetsMap } = param;
+    const stockTakingItemsMap: Map<string, PatchStockTakingItem> =
+      UtilFuncs.createMap<string, PatchStockTakingItem>({
+        propertyName: 'uuid',
+        array: result,
+      });
+
+    stockTakingItems.forEach((item) => {
+      const asset = assetsMap.get(item.assetId);
+      const result = stockTakingItemsMap.get(item.stockTakingUuid);
+      if (!result || !asset) {
+        throw new NotFoundException('result or asset not found');
+      }
+      if (result.locationUuid && result.foundAt) {
+        asset.location_uuid = result.locationUuid;
+        item.foundInLocationUuid = result.locationUuid;
+        item.foundAt = result.foundAt;
+      }
+    });
+
+    return stockTakingItems;
   }
 }

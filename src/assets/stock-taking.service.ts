@@ -3,11 +3,19 @@ import { StockTakingEntity } from './models/stock-taking.entity';
 import { User } from '../users/models/user.entity';
 import { Assets } from './models/assets.entity';
 import { StockTakingItemEntity } from './models/stock-taking-item.entity';
+import { In } from "typeorm";
 
 @Injectable()
 export class StockTakingService {
-  getStockTaking(): Promise<StockTakingEntity[]> {
+
+  getStockTakings(): Promise<StockTakingEntity[]> {
     return StockTakingEntity.find();
+  }
+
+  getStockTakingsByUuids(uuids: string[]): Promise<StockTakingEntity[]> {
+    return StockTakingEntity.find({where: {
+      uuid: In(uuids)
+      }})
   }
 
   createStockTaking(param: {

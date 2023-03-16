@@ -48,7 +48,7 @@ services:
     command: npm run start:debug
     ports:
       - 3000:3000
-      - 9249:9249
+      - 9229:9229
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules

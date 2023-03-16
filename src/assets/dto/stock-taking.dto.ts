@@ -1,4 +1,5 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsArray, IsISSN, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
 
 export class CreateStockTakingDTO {
   @IsString()
@@ -27,3 +28,41 @@ export interface StockTakingItemDTO {
   serialNumber: string;
 }
 
+export class PatchStockTakingsDTO {
+
+  @IsArray()
+  @ValidateNested({each: true})
+  @Type(() => PatchStockTakingDTO)
+  stockTakings: PatchStockTakingDTO[];
+
+}
+
+export class PatchStockTakingDTO {
+
+  @IsString()
+  uuid: string;
+
+  @IsArray()
+  @ValidateNested({each: true})
+  @Type(() => PatchStockTakingItemDTO)
+  items: PatchStockTakingItemDTO[];
+
+}
+
+export class PatchStockTakingItemDTO {
+
+  @IsString()
+  uuid: string;
+
+  @IsOptional()
+  foundAt: Date | null
+
+  @IsOptional()
+  locationUuid: string;
+}
+
+export interface PatchStockTakingItem {
+  uuid: string;
+  foundAt: Date | null;
+  locationUuid: string;
+}

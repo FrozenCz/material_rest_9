@@ -32,6 +32,8 @@ import {
   AssetAttachmentType,
 } from './assets/models/assets-attachment.entity';
 import { AssetTransferQuery, RequestForAssetTransfer, TransferActionParams } from "./assets/models/asset.model";
+import { AssetChangeDTO } from "./assets/dto/barcodes.dto";
+import { PatchStockTakingDTO } from "./assets/dto/stock-taking.dto";
 
 
 
@@ -260,5 +262,13 @@ export class Api {
 
   getStockTakingInProgress(user: User) {
     return this.assetsFacade.getStockTakingInProgress(user)
+  }
+
+  saveChangesBarcodes(param: { assets: AssetChangeDTO[] }) {
+    return this.assetsFacade.saveChangesBarcodes(param);
+  }
+
+  patchStockTakingInProgress(param: {stockTakings: PatchStockTakingDTO[]; user: User}) {
+    return this.assetsFacade.patchStockTakingInProgress(param);
   }
 }
