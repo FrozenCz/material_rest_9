@@ -6,12 +6,13 @@ import { json, urlencoded } from 'express';
 
 async function bootstrap() {
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    httpsOptions: {
-      cert: '/etc/ssl/certs/fullchain.pem',
-      key: '/etc/ssl/private/privkey.pem'
-    }
-  });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule,
+    // {
+    // httpsOptions: {
+    //   cert: '/etc/ssl/certs/fullchain.pem',
+    //   key: '/etc/ssl/private/privkey.pem'
+    // }}
+  );
 
   const options = new DocumentBuilder()
     .setTitle('BP - backend')
