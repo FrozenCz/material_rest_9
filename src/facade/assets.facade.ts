@@ -306,9 +306,13 @@ export class AssetsFacade {
     stockTakingItems.forEach((item) => {
       const asset = assetsMap.get(item.assetId);
       const result = stockTakingItemsMap.get(item.stockTakingUuid);
-      if (!result || !asset) {
-        throw new NotFoundException('result or asset not found');
+      if (!result) {
+        throw new NotFoundException('result not found id: ' + item.stockTakingUuid);
       }
+      if (!asset) {
+        throw new NotFoundException('asset not found in: ' + item.assetId);
+      }
+
       if (result.locationUuid && result.foundAt) {
         asset.location_uuid = result.locationUuid;
         item.foundInLocationUuid = result.locationUuid;
