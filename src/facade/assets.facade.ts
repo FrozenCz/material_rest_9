@@ -316,16 +316,16 @@ export class AssetsFacade {
         throw new NotFoundException('asset not found in: ' + item.assetId);
       }
 
+      console.log(result);
+
       if (result.locationUuid && result.foundAt) {
         asset.location_uuid = result.locationUuid;
-        asset.note = 'test';
         asset.save();
         item.foundInLocationUuid = result.locationUuid;
-        item.note = 'test';
         item.foundAt = result.foundAt;
       }
     });
-    StockTakingItemEntity.save(stockTakingItems);
+    // StockTakingItemEntity.save(stockTakingItems);
     return stockTakingItems;
   }
 }
