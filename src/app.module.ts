@@ -29,6 +29,7 @@ import {
   AssetAttachmentSubscriber,
   AssetSubscriber,
 } from './websocket/subscribers/asset.subscriber';
+import { LoggingInterceptor } from "./logging/logging.interceptor";
 
 const controllers = [
   UsersController,
@@ -80,6 +81,6 @@ const facades = [UsersFacade, AssetsFacade, LocationFacade];
     WsModule,
   ],
   controllers: [...controllers],
-  providers: [Api, ...facades, ...subscribers],
+  providers: [Api, ...facades, ...subscribers, {provide: APP_INTERCEPTOR, useClass: LoggingInterceptor}],
 })
 export class AppModule {}
