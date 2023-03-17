@@ -318,11 +318,12 @@ export class AssetsFacade {
 
       if (result.locationUuid && result.foundAt) {
         asset.location_uuid = result.locationUuid;
+        asset.save();
         item.foundInLocationUuid = result.locationUuid;
         item.foundAt = result.foundAt;
       }
     });
-
+    StockTakingItemEntity.save(stockTakingItems);
     return stockTakingItems;
   }
 }
