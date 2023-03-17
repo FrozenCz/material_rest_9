@@ -1,4 +1,13 @@
-import { IsArray, IsISSN, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsDateString,
+  IsISSN,
+  IsNumber,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  ValidateNested
+} from "class-validator";
 import { Type } from "class-transformer";
 
 export class CreateStockTakingDTO {
@@ -19,7 +28,7 @@ export interface StockTakingInProgressDTO {
 export interface StockTakingItemDTO {
   uuid: string;
   id: number;
-  name: string;
+  assetName: string;
   location: {
     name: string;
     uuid: string;
@@ -54,11 +63,13 @@ export class PatchStockTakingItemDTO {
   @IsString()
   uuid: string;
 
-  @IsOptional()
+  @IsDateString()
+  @ValidateIf((object, value) => value !== null)
   foundAt: Date | null
 
-  @IsOptional()
-  locationUuid: string;
+  @IsString()
+  @ValidateIf((object, value) => value !== null)
+  locationUuid: string | null;
 }
 
 export interface PatchStockTakingItem {

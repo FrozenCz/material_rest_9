@@ -211,7 +211,7 @@ export class AssetsFacade {
         return {
           ...item,
           id: item.assetId,
-          name: found.name,
+          assetName: found.name,
           serialNumber: found.serialNumber,
           location: await found.location,
         };
