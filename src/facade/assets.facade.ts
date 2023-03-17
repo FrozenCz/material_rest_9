@@ -296,7 +296,9 @@ export class AssetsFacade {
     stockTakingItems: StockTakingItemEntity[];
     assetsMap: Map<number, Assets>;
   }): StockTakingItemEntity[] {
+
     const { result, stockTakingItems, assetsMap } = param;
+
     const stockTakingItemsMap: Map<string, PatchStockTakingItem> =
       UtilFuncs.createMap<string, PatchStockTakingItem>({
         propertyName: 'uuid',
@@ -305,7 +307,8 @@ export class AssetsFacade {
 
     stockTakingItems.forEach((item) => {
       const asset = assetsMap.get(item.assetId);
-      const result = stockTakingItemsMap.get(item.stockTakingUuid);
+      const result = stockTakingItemsMap.get(item.uuid);
+
       if (!result) {
         throw new NotFoundException('result not found id: ' + item.stockTakingUuid);
       }
