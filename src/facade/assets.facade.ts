@@ -26,6 +26,9 @@ import {
 } from '../assets/dto/stock-taking.dto';
 import { StockTakingItemEntity } from '../assets/models/stock-taking-item.entity';
 import { UtilFuncs } from '../utils/utilFuncs';
+import { ExtractJwt } from 'passport-jwt';
+import fromAuthHeader = ExtractJwt.fromAuthHeader;
+import * as Util from 'util';
 
 @Injectable()
 export class AssetsFacade {
@@ -256,12 +259,17 @@ export class AssetsFacade {
     const resultsMap: Map<string, PatchStockTakingItem[]> =
       this.getStockTakingItemMapByStockTakingUuid(stockTakings);
     const assetsMap = await this.assetsService.getAssetsMap$();
+    const locationsMap = UtilFuncs.createMap<string, Location>({
+      propertyName: 'uuid',
+      array: await this.locationService.listLocations(),
+    });
 
     stockTakingsForSolver.forEach((stockTaking) =>
       this.updateStockTakingItems({
         stockTakingItems: stockTaking.items,
         result: resultsMap.get(stockTaking.uuid) ?? [],
         assetsMap,
+        locationsMap,
       }),
     );
     return StockTakingEntity.save(stockTakingsForSolver);
@@ -295,9 +303,9 @@ export class AssetsFacade {
     result: PatchStockTakingItem[];
     stockTakingItems: StockTakingItemEntity[];
     assetsMap: Map<number, Assets>;
+    locationsMap: Map<string, Location>;
   }): StockTakingItemEntity[] {
-
-    const { result, stockTakingItems, assetsMap } = param;
+    const { result, stockTakingItems, assetsMap, locationsMap } = param;
 
     const stockTakingItemsMap: Map<string, PatchStockTakingItem> =
       UtilFuncs.createMap<string, PatchStockTakingItem>({
@@ -310,16 +318,21 @@ export class AssetsFacade {
       const result = stockTakingItemsMap.get(item.uuid);
 
       if (!result) {
-        throw new NotFoundException('result not found id: ' + item.stockTakingUuid);
+        throw new NotFoundException(
+          'result not found id: ' + item.stockTakingUuid,
+        );
       }
       if (!asset) {
         throw new NotFoundException('asset not found in: ' + item.assetId);
       }
 
       if (result.locationUuid && result.foundAt) {
-        console.log("ano chci nastavit location");
-        asset.location_uuid = result.locationUuid;
-        asset.save();
+        const location = locationsMap.get(result.locationUuid);
+        if (location) {
+          asset.location = Promise.resolve(location);
+          asset.save();
+        }
+
         item.foundInLocationUuid = result.locationUuid;
         item.foundAt = result.foundAt;
       }
