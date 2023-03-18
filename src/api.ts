@@ -252,7 +252,7 @@ export class Api {
     return this.assetsFacade.getBarcodes();
   }
 
-  getStockTaking() {
+  getStockTakings() {
     return this.assetsFacade.getStockTakings();
   }
 
@@ -270,5 +270,9 @@ export class Api {
 
   patchStockTakingInProgress(param: {stockTakings: PatchStockTakingDTO[]; user: User}) {
     return this.assetsFacade.patchStockTakingInProgress(param);
+  }
+
+  closeStockTaking(param: {uuid: string; user: User}) {
+    return this.assetsFacade.closeStockTaking(param);
   }
 }

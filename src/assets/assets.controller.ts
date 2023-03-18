@@ -33,9 +33,13 @@ import { Response } from 'express';
 import { CreateRequestForAssetTransferDto } from './dto/createRequestForAssetTransfer.dto';
 import { AssetTransferQuery, TransferAction } from './models/asset.model';
 import { Barcode } from './models/barcode.model';
-import { CreateStockTakingDTO, PatchStockTakingsDTO, StockTakingInProgressDTO } from "./dto/stock-taking.dto";
-import { StockTakingEntity } from "./models/stock-taking.entity";
-import { BarcodesChangesDTO } from "./dto/barcodes.dto";
+import {
+  CreateStockTakingDTO,
+  PatchStockTakingsDTO,
+  StockTakingInProgressDTO,
+} from './dto/stock-taking.dto';
+import { StockTakingEntity } from './models/stock-taking.entity';
+import { BarcodesChangesDTO } from './dto/barcodes.dto';
 
 @Controller('assets')
 export class AssetsController {
@@ -101,7 +105,7 @@ export class AssetsController {
   barcodesChanges(
     @Body(ValidationPipe) saveChangesDTO: BarcodesChangesDTO,
   ): Promise<void> {
-    return this.api.saveChangesBarcodes({...saveChangesDTO});
+    return this.api.saveChangesBarcodes({ ...saveChangesDTO });
   }
 
   @Post('/stock-taking')
@@ -109,22 +113,42 @@ export class AssetsController {
   @RightsAllowed(RightsTag.createAssets)
   createStockTaking(
     @GetUser() user: User,
-    @Body(ValidationPipe) createStockTaking: CreateStockTakingDTO
+    @Body(ValidationPipe) createStockTaking: CreateStockTakingDTO,
   ): Promise<any> {
-    return this.api.createStockTaking({user, name: createStockTaking.name, solverId: createStockTaking.solverId});
+    return this.api.createStockTaking({
+      user,
+      name: createStockTaking.name,
+      solverId: createStockTaking.solverId,
+    });
   }
 
   @Get('/stock-taking')
-  getStockTaking(): Promise<StockTakingEntity[]> {
-    return this.api.getStockTaking();
+  getStockTakings(): Promise<StockTakingEntity[]> {
+    return this.api.getStockTakings();
   }
+
+  @Get('/stock-taking/:uuid')
+  getStockTaking(@Param('uuid') uuid: string): Promise<StockTakingEntity> {
+    return this.api.getStockTakings().then((stockTakings) => {
+      return stockTakings.find((stockTaking) => stockTaking.uuid === uuid);
+    });
+  }
+
+  @Post('/stock-taking/:uuid/close')
+  @RightsAllowed(RightsTag.createAssets)
+  @UseGuards(AuthGuard(), RightsGuard)
+  closeStockTaking(
+    @GetUser() user: User,
+    @Param('uuid') uuid: string): Promise<StockTakingEntity> {
+    return this.api.closeStockTaking({uuid, user});
+  }
+
 
   @Get('/stock-taking-in-progress')
   @UseGuards(AuthGuard())
   getStockTakingInProgress(
-    @GetUser() user: User
-  ):
-    Promise<StockTakingInProgressDTO[]> {
+    @GetUser() user: User,
+  ): Promise<StockTakingInProgressDTO[]> {
     return this.api.getStockTakingInProgress(user);
   }
 
@@ -132,12 +156,13 @@ export class AssetsController {
   @UseGuards(AuthGuard())
   patchStockTakingInProgress(
     @GetUser() user: User,
-    @Body(ValidationPipe) patchStockTakingDTO: PatchStockTakingsDTO
-  ):
-    Promise<any> {
-    return this.api.patchStockTakingInProgress({...patchStockTakingDTO, user});
+    @Body(ValidationPipe) patchStockTakingDTO: PatchStockTakingsDTO,
+  ): Promise<any> {
+    return this.api.patchStockTakingInProgress({
+      ...patchStockTakingDTO,
+      user,
+    });
   }
-
 
   @Get(':assetId/attachments/:attachment_id/:filename')
   async getAssetAttachment(

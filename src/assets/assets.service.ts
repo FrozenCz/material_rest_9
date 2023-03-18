@@ -586,4 +586,13 @@ export class AssetsService {
       propertyName: 'id'
     }))
   }
+
+  async closeStockTaking(param: {uuid: string; user: User}) {
+    const {uuid} = param;
+    const stockTaking = await StockTakingEntity.findOneOrFail({where: {uuid}});
+
+    stockTaking.closedAt = new Date()
+
+    return stockTaking.save();
+  }
 }

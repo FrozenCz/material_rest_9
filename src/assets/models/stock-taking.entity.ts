@@ -46,7 +46,7 @@ export class StockTakingEntity extends BaseEntity{
   items: StockTakingItemEntity[]
 
   @CreateDateColumn({type: 'timestamp without time zone'})
-  createAt: Date
+  createdAt: Date
 
   @Column({type: 'timestamp without time zone', nullable: true})
   closedAt: Date | null

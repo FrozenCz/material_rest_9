@@ -340,4 +340,8 @@ export class AssetsFacade {
     StockTakingItemEntity.save(stockTakingItems);
     return stockTakingItems;
   }
+
+  closeStockTaking(param: {uuid: string; user: User}) {
+    return this.assetsService.closeStockTaking(param);
+  }
 }
